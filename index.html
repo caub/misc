@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<style media="screen" type="text/css">
+body{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+table, th, td {
+    border: 1px solid black;
+    padding: 4px;
+}
+table {
+    border-spacing: 10px;
+    cursor: default;
+}
+
+td {
+	width: 80px;
+	height: 80px;
+	font-size: 50pt;
+	margin: 2px;
+/* 	background: #eee; */
+	font-weight: bold;
+	font-family: "lucida console";
+	vertical-align: middle;
+	text-transform: uppercase; 
+	text-align:center;
+}
+.x2 {
+	border: 2px solid blue;
+}
+.x3 {
+	border: 3px solid red;
+}
+#text {
+	height: 50px;
+	width: 415px;
+	font-size: 30pt;
+	font-family: "lucida console";
+	vertical-align: middle;
+	text-transform: uppercase; 
+	text-align:center;
+}
+#score {
+	height: 40px;
+	width: 415px;
+	font-size: 20pt;
+	text-align:center;
+}
+#points {
+	position: absolute;
+	left: 280px;
+	top: 43px;
+	font-size: 15pt;
+}
+#time {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	font-size: 15pt;
+}
+</style>
+<script src="ruzzle.js"></script>
+</head>
+<body>
+<div id="time">2:00</div>
+<div id="score">0</div>
+<div id="text"></div>
+<div id="points"></div>
+</body>
+</html>
