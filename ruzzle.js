@@ -75,6 +75,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	table.addEventListener("touchmove", function(e){ mousemove({pageX:e.changedTouches[0].pageX,pageY:e.changedTouches[0].pageY}) }, false); 
 	
 	var span = document.createElement("span");
+	
+	
 });
 var dragging=false;
 var lastX=undefined, lastY=undefined;
@@ -86,19 +88,29 @@ function mouseup(e){
 	for (var i=0;i<path.length;i++){
 		grid[path[i][0]][path[i][1]].style.backgroundColor = "";
 	}
-	if (word && word.length>1 && words.indexOf(word)===-1 && dic.indexOf(word)!==-1){ //valid word
-		//counts the points
-		var pts = word.split('').reduce( function(pts, letter){return pts + points[letter]}, 0 )
-		for (var i=path.length-1;i>=0;i--){
-			if (path[i][0]==x3[0] && path[i][1]==x3[1])
-				pts *=3;
-			else if (path[i][0]==x2[0] && path[i][1]==x2[1])
-				pts *=2;
+	var inWord = words.indexOf(word);
+	var inDic = dic.indexOf(word)
+	if (word.length>1) {
+		if (inWord===-1 && inDic!==-1){ //valid word
+			var pts = word.split('').reduce( function(pts, letter){return pts + points[letter]}, 0 )
+			for (var i=path.length-1;i>=0;i--){
+				if (path[i][0]==x3[0] && path[i][1]==x3[1])
+					pts *=3;
+				else if (path[i][0]==x2[0] && path[i][1]==x2[1])
+					pts *=2;
+			}
+			document.getElementById("points").innerHTML = "+"+pts;
+			document.getElementById("score").innerHTML = +document.getElementById("score").innerHTML + pts;
+			words.push(word);
+			document.getElementById('audiosuccess').play();
+		}else if (words.indexOf(word)!==-1){
+			document.getElementById('audiodone').play();
+		}else if (inDic === -1){
+			document.getElementById('audiofail').play();
 		}
-		document.getElementById("points").innerHTML = "+"+pts;
-		document.getElementById("score").innerHTML = +document.getElementById("score").innerHTML + pts;
-		words.push(word);
 	}
+		//counts the points
+		
 	
 	path = [];
 	word='';
@@ -137,3 +149,5 @@ function mousemove(e){
 
 var countdown=120;
 var itv = setInterval(function(){if (--countdown==0) clearInterval(itv); var s=countdown%60;document.getElementById("time").innerHTML=(countdown-s)/60+':'+("0" + s).slice(-2)}, 1000)
+
+
