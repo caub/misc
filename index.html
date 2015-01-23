@@ -2,16 +2,15 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
 <style media="screen" type="text/css">
-body{
+/*body{
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
+}*/
 table, th, td {
     border: 1px solid black;
     padding: 4px;
@@ -66,6 +65,11 @@ td {
 	top: 10px;
 	font-size: 15pt;
 }
+#right {
+	position: absolute;
+	top: 80px;
+	left: 500px;
+}
 </style>
 <script src="ruzzle.js"></script>
 </head>
@@ -73,10 +77,19 @@ td {
 <audio id="audiosuccess" src="success.mp3" preload="auto"></audio>
 <audio id="audiofail" src="fail.mp3" preload="auto"></audio>
 <audio id="audiodone" src="done.mp3" preload="auto"></audio>
-<div id="time">2:00</div>
-<div id="score">0</div>
-<div id="text"></div>
-<div id="points"></div>
+
+<div>
+	<div id="time">2:00</div>
+	<div id="score">0</div>
+	<div id="text"></div>
+	<div id="points"></div>
+	<table id="table"></table>
+</div>
+<div id="right">
+	<h3>solver</h3>
+	<div id="log"></div>	
+</div>
+
 
 </body>
 </html>
