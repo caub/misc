@@ -1,10 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
+<style type="text/css">
+canvas {
+    position: absolute;
+    top: 20px;
+    left:20px;
+}
+
+img {
+    visibility: hidden
+}
+</style>
+<script src="http://qiao.github.io/PathFinding.js/visual/lib/pathfinding-browser.min.js"></script>
 <script src="maze.js"></script>
 </head>
 <body>
-<img id="img" src="./maze.png">
+
+<img id="img" src="maze.png" />
+<canvas id="imgcanvas"></canvas>
+<canvas id="overlaycanvas"></canvas>
+<button id="search">Search</button>
+
 
 </body>
 </html>
