@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>JS Bin</title>
+	<script src="https://rawgit.com/Canop/hu.js/master/hu.js"></script>
+
+<style id="jsbin-css">
+body {
+	margin: 0;
+	text-align: center;
+}
+input[type=number] {
+	width: 30px
+}
+</style>
+</head>
+<body>
+	<p>Search depth: <input id=depthInput type=number value=5 title="depth>4 is slow..."></p>
+<script>
+// Connect Four 
+// without a bitboard
+
+//noprotect
+var m=7, n=6; // m rows (which are the vertical columns) each of them with n elements
+
+var match=null;
+if ((match=location.hash.match(/^#(\d+)x(\d+)$/))!=null){
+	m=+match[1]
+	n=+match[2]
+}
+
+var root;
+
+init()
+	
+function expand(node, maxDepth){
+	if (node.depth >= maxDepth ||!node.stats) return
+    for (var i = 0; i < m; i++) {
+    	if(node.colsLevels[i]>=0){
+    		var child={grid:copy(node.grid), colsLevels:node.colsLevels.slice(), 
+    			stats:{blue:{g:copy2(node.stats.blue.g),c:node.stats.blue.c.slice()},red:{g:copy2(node.stats.red.g),c:node.stats.red.c.slice()}}, depth:node.depth+1, isBlue:node.depth?!node.isBlue:node.isBlue, parent:node, children:[]}
+	
+    		update(child, i);
+			node.children[i] = child;
+			if(child&&child.stats.blue.c[4]===0&&child.stats.red.c[4]===0) expand(child, maxDepth)
+    	}
+    }
+}
+
+function minimax(node){ // http://jsbin.com/bacoro/1/edit?js,output
+	
+	if (!node) // invalid node, column is full
+		return NaN
+    else if (!node.children || !node.children.length)
+		node.score = score(node) // basic score
+	else{
+		var isMaximizer = node.depth==0?node.isBlue:!node.isBlue;
+		node.isMaximizer = isMaximizer;
+		for(var child of node.children){
+			// check if we need to see next child
+			// node.score is the current score being updated after each child visit, and it serves as a bound for pruning
+			if(node.parent && node.parent.score && (isMaximizer && node.score>node.parent.score || !isMaximizer && node.score<node.parent.score)){
+				//we don't need to explore other children = pruning
+				//console.log('pruning from', node)
+				break;
+			}else {
+				var s = minimax(child)
+                if(!isNaN(s)){
+					if (node.score!==undefined){
+						if (isMaximizer)
+							node.score=Math.max(node.score, s)
+						else
+							node.score=Math.min(node.score, s)
+					}else
+						node.score=s
+				}
+			}
+		}
+	}
+    return node.score
+}
+
+function score(node){
+	//if (!node) return NaN; // invalid node, column is full
+	var blue = node.stats.blue.c, red = node.stats.red.c;
+	return 1*blue[0]+4*blue[1]+5*blue[2]+10*blue[3]+(blue[4]?Infinity:0)
+		-  (1*red[0]+4*red[1]+5*red[2]+10*red[3]+(red[4]?Infinity:0))
+}
+
+function update(node, i){//drop a disc in ith column
+	var j=node.colsLevels[i]--;
+	node.grid[i][j] = node.isBlue;
+
+	var mdirs = mydirs(node.grid,i,j);
+	
+	var me = node.stats[node.isBlue?'blue':'red'],
+		op = node.stats[!node.isBlue?'blue':'red'];
+
+	if(mdirs[0].length>=4 || mdirs[1].length>=4 || mdirs[2].length>=4 || mdirs[3].length>=4){
+		me.c[4]=1;
+		return j;
+	}
+    
+	
+	for (var k=0;k< mdirs.length; k++){
+		var x=mdirs[k]
+		if(x.length==3){
+			var x1 = [2*x[0][0]-x[1][0],2*x[0][1]-x[1][1]],
+				x2 = [2*x[2][0]-x[1][0],2*x[2][1]-x[1][1]];
+
+			if (node.grid[x1[0]][x1[1]]===0 && node.grid[x2[0]][x2[1]]===0)
+				me.c[3]++;
+			else if(node.grid[x1[0]][x1[1]]===0 || node.grid[x2[0]][x2[1]]===0)// at least one free end
+				me.c[2]++;
+
+			if(_[i][j]==x[0]){
+				if (remRow(me.g, x[1], x[2]))
+					(node.grid[x2[0]][x2[1]]===0)?me.c[1]--:me.c[0]--;
+			}else if(_[i][j]==x[2]){
+				if (remRow(me.g, x[0], x[1]))
+					(node.grid[x1[0]][x1[1]]===0)?me.c[1]--:me.c[0]--;
+			}
+			
+			if(node.grid[x1[0]][x1[1]]===0 || node.grid[x2[0]][x2[1]]===0)
+				addRow(me.g, x[0], x[2]);
+			
+		}else if(x.length==2){
+			var x1 = [2*x[0][0]-x[1][0],2*x[0][1]-x[1][1]],
+				x2 = [2*x[1][0]-x[0][0],2*x[1][1]-x[0][1]];
+
+			if (node.grid[x1[0]][x1[1]]===0 && node.grid[x2[0]][x2[1]]===0)
+				me.c[1]++;
+			else if (node.grid[x1[0]][x1[1]]===0 || node.grid[x2[0]][x2[1]]===0) // at least one free end
+				me.c[0]++;
+			if (node.grid[x1[0]][x1[1]]===0 || node.grid[x2[0]][x2[1]]===0)
+				addRow(me.g, x[0], x[1]);
+
+		}
+	}
+	var odirs = oppDirs(node.grid,i,j);
+	for(var x of odirs){
+		if(x.length===3){
+			var x2=[2*x[2][0]-x[1][0],2*x[2][1]-x[1][1]];
+			if (node.grid[x2[0]][x2[1]]===0){
+				op.c[3]--;
+				op.c[2]++;
+			}else{
+				remRow(op.g, x[0], x[2])
+				op.c[2]--;
+			}
+		}else if(x.length===2){
+			var x2=[2*x[1][0]-x[0][0],2*x[1][1]-x[0][1]];
+			if (node.grid[x2[0]][x2[1]]===0){
+				op.c[1]--;
+				op.c[0]++;
+			}else{
+				remRow(op.g, x[0], x[1])
+				op.c[0]--;
+			}
+		}
+	}
+
+	return j;
+}
+
+
+function addRow(grid,a1,a2){
+	grid[a1[0]][a1[1]].push(a2);
+	grid[a2[0]][a2[1]].push(a1);
+}
+function remRow(grid,a1,a2){
+	var i1=grid[a1[0]][a1[1]].indexOf(a2),
+		i2=grid[a2[0]][a2[1]].indexOf(a1);
+	if (i1>=0) grid[a1[0]][a1[1]].splice(i1,1);
+	if (i2>=0) grid[a2[0]][a2[1]].splice(i2,1);
+	return i1>=0 && i2>=0
+}
+
+
+function mydirs(grid, i, j){
+	var r=[[],[],[],[]]
+	if(grid[i][j]===grid[i-1][j-1]){
+		if(grid[i][j]===grid[i-2][j-2]){
+			if(grid[i][j]===grid[i-3][j-3])
+				r[0].push(_[i-3][j-3]);
+			r[0].push(_[i-2][j-2]);
+		}
+		r[0].push(_[i-1][j-1])
+	}
+	r[0].push(_[i][j])
+	if(grid[i][j]===grid[i+1][j+1]){
+		r[0].push(_[i+1][j+1])
+		if(grid[i][j]===grid[i+2][j+2]){
+			r[0].push(_[i+2][j+2]);
+			if(grid[i][j]===grid[i+3][j+3])
+				r[0].push(_[i+3][j+3])
+		}
+	}
+    if(grid[i][j]===grid[i-1][j+1]){
+		if(grid[i][j]===grid[i-2][j+2]){
+			if(grid[i][j]===grid[i-3][j+3])
+				r[1].push(_[i-3][j+3])
+			r[1].push(_[i-2][j+2]);
+		}
+		r[1].push(_[i-1][j+1])
+	}
+	r[1].push(_[i][j])
+	if(grid[i][j]===grid[i+1][j-1]){
+		r[1].push(_[i+1][j-1])
+		if(grid[i][j]===grid[i+2][j-2]){
+			r[1].push(_[i+2][j-2]);
+			if(grid[i][j]===grid[i+3][j-3])
+				r[1].push(_[i+3][j-3])
+		}
+	}
+	if(grid[i][j]===grid[i-1][j]){
+		if(grid[i][j]===grid[i-2][j]){
+			if(grid[i][j]===grid[i-3][j])
+				r[2].push(_[i-3][j])
+			r[2].push(_[i-2][j]);
+		}
+		r[2].push(_[i-1][j])
+	}
+	r[2].push(_[i][j])
+	if(grid[i][j]===grid[i+1][j]){
+		r[2].push(_[i+1][j])
+		if(grid[i][j]===grid[i+2][j]){
+			r[2].push(_[i+2][j]);
+			if(grid[i][j]===grid[i+3][j])
+				r[2].push(_[i+3][j])
+		}
+	}
+	r[3]=[_[i][j]]
+	if(grid[i][j]===grid[i][j+1]){
+		r[3].push(_[i][j+1])
+		if(grid[i][j]===grid[i][j+2]){
+			r[3].push(_[i][j+2]);
+			if(grid[i][j]===grid[i][j+3])
+				r[3].push(_[i][j+3])
+		}
+	}
+	return r
+}
+
+function dist2(a,b){
+	return Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)
+}
+
+function oppDirs(grid, i, j){
+	var r=[[],[],[],[],[],[],[]];
+	if(!grid[i][j]===grid[i-1][j-1]){
+		r[0].push(_[i-1][j-1])
+		if(!grid[i][j]===grid[i-2][j-2]){
+			r[0].push(_[i-2][j-2]);
+			if(!grid[i][j]===grid[i-3][j-3])
+				r[0].push(_[i-3][j-3]);
+		}
+	}
+	if(!grid[i][j]===grid[i+1][j+1]){
+		r[1].push(_[i+1][j+1])
+		if(!grid[i][j]===grid[i+2][j+2]){
+			r[1].push(_[i+2][j+2]);
+			if(!grid[i][j]===grid[i+3][j+3])
+				r[1].push(_[i+3][j+3])
+		}
+	}
+	if(!grid[i][j]===grid[i-1][j+1]){
+		r[2].push(_[i-1][j+1])
+		if(!grid[i][j]===grid[i-2][j+2]){
+			r[2].push(_[i-2][j+2]);
+			if(!grid[i][j]===grid[i-3][j+3])
+				r[2].push(_[i-3][j+3])
+		}
+	}
+	if(!grid[i][j]===grid[i+1][j-1]){
+		r[3].push(_[i+1][j-1])
+		if(!grid[i][j]===grid[i+2][j-2]){
+			r[3].push(_[i+2][j-2]);
+			if(!grid[i][j]===grid[i+3][j-3])
+				r[3].push(_[i+3][j-3])
+		}
+	}
+	if(!grid[i][j]===grid[i-1][j]){
+		r[4].push(_[i-1][j])
+		if(!grid[i][j]===grid[i-2][j]){
+			r[4].push(_[i-2][j]);
+			if(!grid[i][j]===grid[i-3][j])
+				r[4].push(_[i-3][j])
+		}
+	}
+	if(!grid[i][j]===grid[i+1][j]){
+		r[5].push(_[i+1][j])
+		if(!grid[i][j]===grid[i+2][j]){
+			r[5].push(_[i+2][j]);
+			if(!grid[i][j]===grid[i+3][j])
+				r[5].push(_[i+3][j])
+		}
+	}
+	if(!grid[i][j]===grid[i][j+1]){
+		r[6].push(_[i][j+1])
+		if(!grid[i][j]===grid[i][j+2]){
+			r[6].push(_[i][j+2]);
+			if(!grid[i][j]===grid[i][j+3])
+				r[6].push(_[i][j+3])
+		}
+	}
+	return r;
+}
+/*
+function neighbors(i,j){
+	var r=[];
+	if(i>0){
+		if(j>0)   r[0] = [i-1,j-1];
+		          r[1] = [i-1,j];
+		if(j<n-1) r[2] = [i-1,j+1];
+	}
+	if(j<n-1)     r[3] = [i,j+1];
+	if(i<m-1){
+		if(j<n-1) r[4] = [i+1,j+1];
+		          r[5] = [i+1,j];
+		if(j>0)   r[6] = [i+1,j-1];
+		
+	}
+	return r;
+}*/
+
+
+function copy(somegrid){
+	var newgrid=_copy(somegrid);
+	overflow(newgrid)
+	return newgrid;
+}
+function _copy(somegrid){
+	var newgrid=[];
+	for(var i=0; i<somegrid.length;i++){
+		newgrid[i] = somegrid[i].slice()
+	}
+	return newgrid;
+}
+function copy2(somegrid){
+	var newgrid=[];
+	for(var i=0; i<somegrid.length;i++){
+		newgrid[i] = _copy(somegrid[i])
+	}
+	return newgrid;
+}
+function overflow(somegrid){
+	somegrid[-1]=somegrid[-2]=somegrid[-3]=somegrid[m]=somegrid[m+1]=somegrid[m+2]=[];
+}
+function initialize0(somegrid){
+	for (var i=0;i<m;i++){
+		somegrid[i]=[];
+		for (var j=0;j<n;j++){
+			somegrid[i][j]=0
+		}
+	}
+}
+function initialize(somegrid, val){
+	for (var i=0;i<m;i++){
+		somegrid[i]=[];
+		for (var j=0;j<n;j++){
+			somegrid[i][j]=[]
+		}
+	}
+}
+
+
+function init(){
+	root={isBlue:true, grid:[], stats:{blue:{g:[],c:[0,0,0,0,0]},red:{g:[],c:[0,0,0,0,0]}}/*blue and red stats*/, colsLevels:[], depth:0, children:[]}
+	for (var i=0;i<m;i++)
+		root.colsLevels[i]=n-1;
+	initialize0(root.grid)
+	overflow(root.grid)
+	initialize(root.stats.blue.g)
+	initialize(root.stats.red.g)
+	$('.disc').forEach(function(d){ù(d).remove()})
+}
+
+
+
+var svg = ù('<svg>', 'body').css({
+	width:(100+m*30)+'px', height:(150+n*30)+'px'
+})
+
+var gradRed = svg.def('<linearGradient>').attr({
+	x1:0, y1:0, x2:1, y2:1
+}).stops(
+	{offset:'0%', stopColor:'Tomato', stopOpacity:0.4},
+	{offset:'80%', stopColor:'Coral', stopOpacity:0.8}
+);
+var gradBlue = svg.def('<linearGradient>').attr({
+	x1:0, y1:0, x2:1, y2:1
+}).stops(
+	{offset:'0%', stopColor:'CornflowerBlue', stopOpacity:0.4},
+	{offset:'80%', stopColor:'CadetBlue', stopOpacity:0.8}
+);
+
+var turnIndicator=ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r:14, cx:20, cy:100+n*30-15})
+.on('click', function(){
+	var i=predict(+depthInput.value)
+	console.log('pred',i, root.children.map(function(c){return c.score}))
+})
+
+ù('<text>', svg).attr({x:5, y:100+n*30-35})
+.css({fontSize:'14px', fill:'black'})
+.text("turn:");
+ù('<text>', svg).attr({x:110, y:80, fillOpacity:0.1})
+.css({fontSize:'30px', fill:'black'})
+.text("drop   area");
+
+for (var i=0;i<m;i++){// drop in zones
+	ù('<line>', svg).attr({
+		x1:65+i*30, y1:50, x2:65+i*30, y2:85,
+		stroke:'lightgray', strokeOpacity:0, i: i, 
+		strokeWidth:28, strokeLinecap:'round'
+	}).on('click', function(){
+		var el = ù(this), i = +el.attr('i');
+		if(root.isBlue && root.colsLevels[i]>=0) {
+			var j=update(root, i);
+
+			console.log('stats', root.stats.blue.c, root.stats.red.c)
+			ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r:14, cx:65+i*30, cy:100+15, class: 'disc'})
+			.animate({strokeOpacity:0, cy:100+j*30+15}, 180);
+
+			if (root.stats[root.isBlue?'blue':'red'].c[4]>0){
+				show('You win!')
+				return
+			}
+
+			root.isBlue = !root.isBlue;
+			turnIndicator.attr('fill', root.isBlue?gradBlue:gradRed);
+
+			setTimeout(function(){
+				var i=predict(+depthInput.value);
+				if(root.children[i].score===Infinity){
+					i=predict(1)
+				}
+				var j=update(root, i)
+				console.log('stats op', root.stats.blue.c, root.stats.red.c, root.children.map(function(c){return c.score}))
+				ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r:14, cx:65+i*30, cy:100+15, class: 'disc'})
+				.animate({strokeOpacity:0, cy:100+j*30+15}, 180);
+				if (root.stats[root.isBlue?'blue':'red'].c[4]>0)
+					show('You lost :(')
+
+					root.isBlue = !root.isBlue;
+				turnIndicator.attr('fill', root.isBlue?gradBlue:gradRed);
+			},200)
+
+		}
+	})
+}
+for (var i=0;i<=m;i++){ // vertical lines
+	ù('<line>', svg).attr({
+		x1:50+i*30, y1: 100, x2:50+i*30, y2:100+n*30,
+		stroke:'#000000', strokeOpacity:1,
+		strokeWidth:1, strokeLinecap:'round'
+	})
+}
+
+for (var j=0;j<=n;j++){ // hor lines
+	ù('<line>', svg).attr({
+		x1:50, y1:100+j*30, x2:50+m*30, y2:100+j*30,
+		stroke:'#000000', strokeOpacity:1,
+		strokeWidth:1, strokeLinecap:'round'
+	})	
+}
+
+
+var _=[];
+for (var i=0; i<m; i++){
+	_[i]=[]
+	for(var j=0;j<n;j++)
+		_[i][j]=[i,j];
+}
+overflow(_)
+
+
+function predict(depth){
+	root.children=[];
+	root.score=undefined;
+	expand(root, depth);
+	var s=minimax(root);
+	var best=root.children.map(function(c,i){return i}).filter(function(i){return root.children[i].score===s})
+	/*var mn=[-Infinity,-1]
+	for (var i=0;i<root.children.length; i++){
+		var s=minimax(root.children[i])
+		if(s>mn[0]) mn=[s,i]
+	}*/
+	return best[Math.floor(best.length*Math.random())]
+}
+
+
+
+
+function show(winner){
+	var overlay = ù('<svg>', svg).css({
+		position:'fixed', left:0, top:0, width:'100%', height:'100%'
+	}).on('click', function(){
+		init()
+		ù(this).remove()
+	});
+
+	ù('<text>', overlay).attr({x:-70+m*30/2, y:90+n*30/2})
+	.css({fontSize:'60px', fill:'black'})
+	.text(winner)
+	//.animate({strokeOpacity:0}, 5000, ù.remove);
+}
+function $(s){
+	return [].slice.apply(document.querySelectorAll(s))
+}
+</script>
+
+</body>
+</html>
