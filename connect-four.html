@@ -22,7 +22,6 @@ input[type=number] {
 // Connect Four 
 // without a bitboard
 
-//noprotect
 var m=7, n=6; // m rows (which are the vertical columns) each of them with n elements
 
 var match=null;
@@ -375,7 +374,8 @@ function init(){
 	overflow(root.grid)
 	initialize(root.stats.blue.g)
 	initialize(root.stats.red.g)
-	$('.disc').forEach(function(d){ù(d).remove()})
+	for (var d of document.querySelectorAll('.disc'))
+		ù(d).remove()
 }
 
 
@@ -406,9 +406,9 @@ var turnIndicator=ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r
 ù('<text>', svg).attr({x:5, y:100+n*30-35})
 .css({fontSize:'14px', fill:'black'})
 .text("turn:");
-ù('<text>', svg).attr({x:110, y:80, fillOpacity:0.1})
+ù('<text>', svg).attr({x:70, y:80, fillOpacity:0.1})
 .css({fontSize:'30px', fill:'black'})
-.text("drop   area");
+.text("click to drop");
 
 for (var i=0;i<m;i++){// drop in zones
 	ù('<line>', svg).attr({
@@ -507,9 +507,7 @@ function show(winner){
 	.text(winner)
 	//.animate({strokeOpacity:0}, 5000, ù.remove);
 }
-function $(s){
-	return [].slice.apply(document.querySelectorAll(s))
-}
+
 </script>
 
 </body>
