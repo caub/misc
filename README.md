@@ -1,4 +1,4 @@
-Some old code
+Some more or less old code
 
 
 - [maze](//caub.github.io/misc/maze)
@@ -7,3 +7,4 @@ Some old code
 - [2048 solver](//caub.github.io/misc/2048)
 - [minimax](//caub.github.io/misc/minimax)
 - [infinite clock](//caub.github.io/misc/infinite-clock)
+- [calculator](//caub.github.io/misc/calculator)
