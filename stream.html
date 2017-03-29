@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<title>Fetch + Streams Demo</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<link href="https://resources.whatwg.org/logo-streams.svg" rel="icon">
+
+<style>
+	body {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		height: 100vh;
+	}
+	form {
+		margin:0;
+		padding:0;
+		min-width:0;
+		font-size: 1.6em;
+		text-align: center;
+		display: flex;
+		align-items: center;
+		flex-direction: column;
+	}
+	input[type="text"] {
+		font-size: 1.2em;
+		max-width: 100%;
+		margin: 0.5em 0;
+	}
+	input[type="text"]:invalid {
+		outline: auto rgba(250,0,0,.5) 1px;
+	}
+	input[type="submit"] {
+		font-size: 1em;
+		max-width: 100%;
+		margin: .5em 0;
+		white-space: normal;
+	}
+	output {
+		font-family: monospace; 
+		display: block;
+		margin-top: .5em; 
+	}
+	progress {
+		margin: 0 1em;
+		display: inline-block;
+	}
+	fieldset > div {
+		display: flex;
+	}
+
+</style>
+
+
+
+<form id="form">
+	<label for="substring">Enter a substring to search in PI</label>
+	<input type="text" id="substring" pattern="[0-9\.]+" placeholder="3.14159" autocomplete="off" title="Enter only digits" required>
+	<!-- <output id="bytes" for="substring"> </output> -->
+
+	<input type="submit" value="Search, with the Power of Streams!">
+
+	<fieldset id="output" hidden="true">
+		<div>
+			<progress id="progress"></progress>
+			<button type="button" id="cancelBtn">❌</button>
+		</div>
+		<output id="progressText"></output>
+	</fieldset>
+</form>
+
+<script>
+
+const PI_URL = 'http://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt';
+
+// const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+// let bytesValue = new Uint8Array();
+// substring.addEventListener('input', function () {
+// 	bytesValue = encoder.encode(substring.value);
+// 	bytes.value = Array.prototype.map.call(bytesValue, b => `0x${b.toString(16)}`).join(' ');
+// });
+
+
+function consume(reader, contentLength) {
+	let total = 0;
+	progress.max = contentLength;
+	let substringRe = new RegExp(substring.value.replace('.','\\.'));
+	function cancel(e){
+		if (e) {e.preventDefault(); output.hidden=true; }
+		reader.cancel();
+		form.onsubmit = submit;
+		if (e && e.type=='submit') submit();
+	}
+	form.onsubmit = cancel;
+	cancelBtn.onclick = cancel;
+	return pump();
+	function pump() {
+		return reader.read().then(({done, value}) => {
+			if (done)
+				return progressText.textContent = `All done! (${total} bytes total)`;
+
+			total += value.byteLength;
+			progressText.textContent = `${total}${contentLength?'/'+contentLength:''} bytes received`;
+			progress.value = contentLength ? total : null;
+
+			let m = decoder.decode(value).match(substringRe);
+
+			if (m) {
+				progressText.textContent = `Found it! At position ${total - value.byteLength + m.index}.`;
+				return cancel();
+			} else {
+				return pump();
+			}
+		})
+	}
+}
+
+form.onsubmit = submit;
+
+function submit(e) {
+	if (e) e.preventDefault();
+	output.hidden=false;
+	progressText.textContent = 'Performing fetch...';
+
+	fetch(`https://cors-anywhere.herokuapp.com/${PI_URL}`)
+	.then(res => consume(res.body.getReader(), res.headers.get('Content-Length')) )
+	.then(console.log)
+	.catch(e => progressText.textContent = e);
+}
+
+
+
+
+</script>
