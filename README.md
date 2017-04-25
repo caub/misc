@@ -3,8 +3,10 @@ Some more or less old code
 
 - [maze](//caub.github.io/misc/maze)
 - [ruzzle](//caub.github.io/misc/ruzzle)
-- [connect-four](//caub.github.io/misc/connect-four)
+
 - [2048 solver](//caub.github.io/misc/2048)
-- [minimax](//caub.github.io/misc/minimax)
-- [infinite clock](//caub.github.io/misc/infinite-clock)
 - [calculator](//caub.github.io/misc/calculator)
+- [connect-four](//caub.github.io/misc/connect-four)
+- [infinite clock](//caub.github.io/misc/infinite-clock)
+- [minimax](//caub.github.io/misc/minimax)
+- [streams with fetch](//caub.github.io/misc/stream)
