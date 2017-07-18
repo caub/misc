@@ -8,3 +8,4 @@ Some more or less old code
 - [infinite clock](//caub.github.io/misc/infinite-clock)
 - [minimax](//caub.github.io/misc/minimax)
 - [streams with fetch](//caub.github.io/misc/stream)
+- [optimize jpeg/png in browser](//caub.github.io/misc/optim)
