@@ -85,10 +85,10 @@ const decoder = new TextDecoder();
 // });
 
 
-function consume(reader, contentLength) {
+async function consume(reader, contentLength) {
 	let total = 0;
 	progress.max = contentLength;
-	let substringRe = new RegExp(substring.value.replace('.','\\.'));
+	const substringRe = new RegExp(substring.value.replace('.','\\.'));
 	function cancel(e){
 		if (e) {e.preventDefault(); output.hidden=true; }
 		reader.cancel();
@@ -97,11 +97,29 @@ function consume(reader, contentLength) {
 	}
 	form.onsubmit = cancel;
 	cancelBtn.onclick = cancel;
+	let done, value;
+	do {
+		({done, value} = await reader.read());
+
+		total += value.byteLength;
+		progressText.textContent = `${total}${contentLength?'/'+contentLength:''} bytes received`;
+		progress.value = contentLength ? total : null;
+
+		const m = decoder.decode(value).match(substringRe);
+		if (m) {
+			progressText.textContent = `Found it! At position ${total - value.byteLength + m.index}.`;
+			return cancel();
+		}
+
+	} while (!done);
+
+	progressText.textContent = `All done! (${total} bytes total)`;
+
+	/** // without async:
 	return pump();
 	function pump() {
 		return reader.read().then(({done, value}) => {
-			if (done)
-				return progressText.textContent = `All done! (${total} bytes total)`;
+			
 
 			total += value.byteLength;
 			progressText.textContent = `${total}${contentLength?'/'+contentLength:''} bytes received`;
@@ -117,6 +135,7 @@ function consume(reader, contentLength) {
 			}
 		})
 	}
+	*/
 }
 
 form.onsubmit = submit;
