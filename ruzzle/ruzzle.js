@@ -61,9 +61,9 @@ function ruzzle(dic){
 	let cancel = () => {}; // to cancel the last move
 	const words= []; //words already found
 
-	table.onpointerdown = e => {
-
-		var td = e.target.closest('td');
+	table.onpointerdown = evt => {
+		evt.preventDefault();
+		var td = evt.target.closest('td');
 		if (!td) return;
 
 		var X = td.parentNode.rowIndex;
@@ -76,16 +76,31 @@ function ruzzle(dic){
 		td.style.backgroundColor = "yellow";
 		document.getElementById("text").textContent = path.map(a => table.rows[a[0]].cells[a[1]].textContent).join('');
 
-		const r = move(event, table, e => {
-			var td = e.target.closest('td');
-			if (!td) return;
-			var rect = td.getBoundingClientRect(), rad = rect.width/2;
-			const {clientX, clientY} = e.touches ? e.touches[0] : e;
-			const d2 = (rect.left+rad-clientX)**2 + (rect.top+rad-clientY)**2;
-			if (d2 > rad*rad ) return; // ignore the corners
+		const rect = table.rows[0].cells[0].getBoundingClientRect();
+		const rect2 = table.rows[0].cells[1].getBoundingClientRect();
+		const rad = rect.width/2;
+		const rows = Array.from({length: table.rows.length}, (_,i) => rect.left + rad + i*(rect2.left-rect.left) + window.scrollX);
+		const cols = Array.from({length: table.rows.length}, (_,i) => rect.top + rad + i*(rect2.left-rect.left) + window.scrollY);
 
-			var x = td.parentNode.rowIndex;
-			var y = td.cellIndex;
+		const r = move(event, table, e => {
+			// var td = e.target.closest('td');
+			// if (!td) return;
+			// var rect = td.getBoundingClientRect(), rad = rect.width/2;
+			
+			// const d2 = (rect.left+rad-e.clientX)**2 + (rect.top+rad-e.clientY)**2;
+			// console.log('move', e.clientX, e.clientY, rect.left+rad, rect.top+rad, e.target);
+			// for some shit reason, on mobile only, e.target stays the same original
+
+			// if (d2 > rad*rad ) return; // ignore the corners
+
+			const y = rows.findIndex(row =>  (row-e.pageX)*(row-e.pageX) <= rad*rad*.8);
+			if (y===-1) return;
+			const x = cols.findIndex(col =>  (col-e.pageY)*(col-e.pageY) <= rad*rad*.8);
+			if (x===-1) return;
+
+			// var x = td.parentNode.rowIndex;
+			// var y = td.cellIndex;
+			const td = table.rows[x].cells[y];
 
 			if (path.find(p => p[0]===x && p[1]===y)) return; // already used, exit
 			
@@ -223,7 +238,6 @@ function move(e, moveContainer, cb) {
 	const up = e => {
 		document.removeEventListener('pointerup', up);
 		moveContainer.removeEventListener('pointermove', cb);
-		moveContainer.removeEventListener('touchmove', cb);
 		res();
 	};
 
@@ -231,7 +245,6 @@ function move(e, moveContainer, cb) {
 		cb(e); // trigger it now also
 		document.addEventListener('pointerup', up);
 		moveContainer.addEventListener('pointermove', cb);
-		moveContainer.addEventListener('touchmove', cb);
 		res = resolve;
 	});
 	return {cancel: up, promise};

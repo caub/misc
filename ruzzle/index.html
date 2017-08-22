@@ -13,14 +13,15 @@ table {
 	/*border-collapse: collapse;*/
 	user-select: none;
 	margin: 0 auto;
+	touch-action: none;
 }
 
 td {
 	border: 1px solid black;
 	cursor: crosshair;
-	width: 80px;
-	height: 80px;
-	font-size: 60px;
+	width: 70px;
+	height: 70px;
+	font-size: 50px;
 	/* background: #eee; */
 	color: rgba(0,0,0,.9);
 	font-weight: bold;
@@ -28,6 +29,7 @@ td {
 	text-align: center;
 	text-transform: capitalize;
 	user-select: none;
+	touch-action: none;
 }
 .x2 {
 	border: 2px solid blue;
@@ -112,7 +114,7 @@ output span {
 			<span id="points"></span>
 		</div>
 		
-		<table id="table" style="touch-action: auto;"></table>
+		<table id="table"></table>
 	</div>
 	<div class="solver">
 		<output id="log" title="solver output"></output>	
