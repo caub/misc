@@ -15,9 +15,9 @@
 /*
 
 AddSub ::= MulDiv ('+' MulDiv | '-' MulDiv)*
-MulDiv ::= Factor ('*' Factor | '/' Factor)*
-Factor ::= ['-'] (Exp | '(' AddSub ')')
-Exp    ::= Number ('**' Factor)*
+MulDiv ::= Exp ('*' Exp | '/' Exp)*
+Exp    ::= Factor ('**' Factor)*
+Factor ::= ['-'] (Number | '(' AddSub ')')
 Number ::= Digit+
 
 */
@@ -41,18 +41,30 @@ function parseAddSub(s, i=0){
 }
 
 function parseMulDiv(s, i){
-	let [j, v] = parseFactor(s, i);
+	let [j, v] = parseExponent(s, i);
 	while (j<s.length){
 		if (blank.test(s[j])) j++;
 		else if (s[j]=='*'){
-			const [k, w] = parseFactor(s, j+1);
+			const [k, w] = parseExponent(s, j+1);
 			[j, v] = [k, v*w];
 		} else if (s[j]=='/'){
-			const [k, w] = parseFactor(s, j+1);
+			const [k, w] = parseExponent(s, j+1);
 			[j, v] = [k, v/w];
 		} else break;
 	}
 	return [j,v];
+}
+
+function parseExponent(s, i){ // right associative
+	let [j, v] = parseFactor(s, i);
+	while (j<s.length){
+		if (blank.test(s[j])) j++;
+		else if (s[j]=='*'&&s[j+1]=='*') {
+			const [k, w] = parseExponent(s, j+2);
+			return [k, v**w];
+		} else break;
+	}
+	return [j, v];
 }
 
 function parseFactor(s, i){
@@ -66,22 +78,12 @@ function parseFactor(s, i){
 			if (s[j]!==')') throw new Error('parentheses not matched '+s.slice(i,j));
 			return [j+1, factor * v];
 		} else {
-			const [j, v] = parseExponent(s, i);
+			const [j, v] = parseNumber(s, i);
 			return [j, factor * v];
 		}
 	}
 }
-function parseExponent(s, i){ // right associative
-	let [j, v] = parseNumber(s, i);
-	while (j<s.length){
-		if (blank.test(s[j])) j++;
-		else if (s[j]=='*'&&s[j+1]=='*') {
-			const [k, w] = parseFactor(s, j+2);
-			return [k, v**w];
-		} else break;
-	}
-	return [j, v];
-}
+
 function parseNumber(s, i){
 	while (blank.test(s[i])) i++;
 	let m = s.slice(i).match(num);
@@ -93,7 +95,7 @@ function parseNumber(s, i){
 	return [i+v.length, v=='pi'||v=='PI'?PI:parseFloat(v)];
 }
 
-// todo make it work with a tree like before, instead of directly evaluating
+// todo make it work with a binary tree, instead of directly evaluating
 
 var testCases =  [
 	"2 * (4+2)",
