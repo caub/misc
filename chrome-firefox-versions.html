@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chrome vs Firefox versions</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.17/c3.min.css">
+</head>
+<body>
+<h3>using c3js</h3>
+<div id="chart"></div>
+
+<h3>using chartjs</h3>
+<canvas id="myChart" width="400" height="200"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.17/c3.min.js"></script>
+<script>
+	
+load()
+.then(({chromeData, ffData}) => {
+
+
+	var chart = c3.generate({
+		data: {
+			xs: {
+				'chrome': 'x1',
+				'firefox': 'x2',
+			},
+			columns: [
+				['x1'].concat(chromeData.map(o => o.x)),
+				['x2'].concat(ffData.map(o => o.x)),
+				['chrome'].concat(chromeData.map(o => o.y)),
+				['firefox'].concat(ffData.map(o => o.y))
+			]
+		},
+		axis: {
+			x: {
+				type: 'timeseries',
+				tick: {
+					format: '%Y-%m-%d'
+				}
+			}
+		}
+	});
+
+	var ctx = document.getElementById("myChart").getContext('2d');
+	var myChart = new Chart(ctx, {
+		type: 'line',
+		data: {
+				datasets: [{
+						label: 'Chrome versions',
+						borderColor: '#00f',
+						data: chromeData,
+						borderWidth: 1,
+						fill: false,
+				}, {
+						label: 'Firefox versions',
+						borderColor: '#f00',
+						data: ffData,
+						borderWidth: 1,
+						fill: false,
+				}]
+		},
+		options: {
+			responsive: true,
+			title:{
+				display:true,
+				text:'Chrome Vs Firefox versions'
+			},
+			tooltips: {
+				mode: 'index',
+				intersect: false,
+			},
+			hover: {
+				mode: 'nearest',
+				intersect: true
+			},
+			scales: {
+				xAxes: [{
+					type: "time",
+					display: true,
+					time: {format: 'YYYY-MM-DD'},
+					scaleLabel: {
+						display: true,
+						labelString: 'Date'
+					}
+				}],
+				yAxes: [{
+					ticks: {
+						beginAtZero:true
+					}
+				}]
+			}
+		}
+	});
+});
+
+
+function load() {
+	if (localStorage.chromeVsFirefoxVersions) {
+		var cache = JSON.parse(localStorage.chromeVsFirefoxVersions);
+		if (Date.now() < cache.time + 7*86.4e6) {
+			return Promise.resolve(cache.data);
+		}
+	}
+	return Promise.all([
+		fetch('https://cors-anywhere.herokuapp.com/https://en.wikipedia.org/wiki/Google_Chrome_release_history').then(r => r.text()),
+		fetch('https://cors-anywhere.herokuapp.com/https://en.wikipedia.org/wiki/Firefox_release_history').then(r => r.text())
+	])
+	.then(r=>{
+		var doc=(new DOMParser).parseFromString(r[0], "text/html");
+		var chromeT = doc.querySelectorAll('table.wikitable')[1];
+		var chromeM = Array.from(chromeT.rows).slice(1, -1).map(tr => [tr.cells[0].textContent, tr.cells[1].textContent]);
+		var chromeD = transpose(chromeM);
+		var chromeData = chromeD[1].map((d,i) => ({
+			x: d.split(/\n/).filter(l=>l.indexOf('(')<0 || l.indexOf('Win')>=0)[0].split(' ')[0],
+			y: +chromeD[0][i].match(/\d+\.\d+/)
+		}));
+		
+		doc=(new DOMParser).parseFromString(r[1], "text/html");
+		var ffTs = Array.from(doc.querySelectorAll('table.wikitable')).filter(t => t.rows.length>10);
+		var ffM = [].concat(...ffTs.map(t => Array.from(t.rows).slice(1)
+			.filter(tr => Number.isInteger(+tr.cells[tr.cells.length-4].textContent))
+			.map(tr => [tr.cells[tr.cells.length-4].textContent, tr.cells[tr.cells.length-2].textContent])
+		));
+		var ffD=transpose(ffM)
+		var ffData = ffD[1].map((d, i) => ({
+			x: new Date(d.split('(')[0]).toJSON().slice(0, 10),
+			y: +ffD[0][i].match(/\d+\.\d+/)
+		}));
+
+		localStorage.chromeVsFirefoxVersions = JSON.stringify({time: Date.now(), data: {chromeData, ffData}});
+
+		return {chromeData, ffData};
+	});
+}
+
+function transpose(a) {
+	return Object.keys(a[0]).map(i=> a.map(r => r[i]));
+}
+
+
+
+</script>
+</body>
+</html>
+
+
+
