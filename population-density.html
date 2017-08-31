@@ -34,8 +34,8 @@
 <input id=dateInput type='range' min=0> <span id=dateSpan></span>
 <div id="map"></div>
 
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
 
 <script>
 // may 2015
@@ -50,7 +50,7 @@ var height = 350;
   mapTypeId: google.maps.MapTypeId.TERRAIN
 });*/
 
-var dates=[], density = {}, features, color; // initialized after ajax
+const d3Json = url => new Promise(res => d3.json(url, (req, json) => res(json)));
 
 var path = d3.geo.path();
 
@@ -61,21 +61,72 @@ var projection = d3.geo.conicConformal() // Lambert-93
 
 path.projection(projection);
 
-//TODO use queue http://bl.ocks.org/mbostock/4060606
-// other todo: http://zbryikt.github.io/visualize/dorling/
-d3.json('https://rawgit.com/kerneis/france-choropleth/master/data/geofla/departement.json', function(req, geojson) {
-	fetch('https://cors-anywhere.herokuapp.com/https://fr.wikipedia.org/wiki/Liste_des_d%C3%A9partements_fran%C3%A7ais_class%C3%A9s_par_population_et_superficie')
-		.then(r => r.text())
-		.then(r => {
-		const doc=(new DOMParser).parseFromString(r, "text/xml");
+load().then(({geojson, density, dates}) => {
+
+	dateInput.max = dates.length-1;
+	dateInput.value = dates.length-1;
+	var values = Object.keys(density).map(i => density[i][5]);
+	
+	const color = d3.scale.log()
+	.domain([d3.min(values), d3.mean(values), d3.max(values)])
+	.range(["blue", "orange", "red"]);
+		/*console.log(geojson.features.map(function(i){return i.properties.CODE_DEPT}).sort())
+	console.log(Object.keys(density).sort())
+	*/
+	
+	const features = d3.select('#map').append("svg")
+	.attr("width", width)
+	.attr("height", height)
+	.append("g")
+	.attr("id", "departements")
+	.selectAll("path")
+	.data(geojson.features);
+
+	features.enter()
+	.append("path")
+	.attr('class', 'departement')
+	.attr('fill', function(d) { 
+		return color((density[d.properties.CODE_DEPT]||Array.from({length:dates.length},()=>0))[+dateInput.value])
+	})
+	.attr("d", path)
+	
+	dateSpan.textContent = dates[+dateInput.value];
+
+	dateInput.onchange = function(e){
+		d3.selectAll(".departement")
+		.attr('fill', function(d) {
+			return color((density[d.properties.CODE_DEPT]||Array.from({length:dates.length},()=>0))[+dateInput.value])
+		});
+		dateSpan.textContent = dates[+dateInput.value]
+	}
+
+});
+
+
+function load() {
+	if (localStorage.caubPopulationDensity) {
+		var cache = JSON.parse(localStorage.caubPopulationDensity);
+		if (Date.now() < cache.time + 7*86.4e6) {
+			return Promise.resolve(cache.data);
+		}
+	}
+
+	//TODO use queue http://bl.ocks.org/mbostock/4060606
+	// other todo: http://zbryikt.github.io/visualize/dorling/
+
+	return Promise.all([
+		d3Json('https://rawgit.com/kerneis/france-choropleth/master/data/geofla/departement.json'),
+		fetch('https://cors-anywhere.herokuapp.com/https://fr.wikipedia.org/wiki/Liste_des_d%C3%A9partements_fran%C3%A7ais_class%C3%A9s_par_population_et_superficie').then(r => r.text())
+	])
+	.then(([geojson, text]) => {
+
+		const doc=(new DOMParser).parseFromString(text, "text/xml");
 		const rows = Array.from(doc.querySelectorAll('table.wikitable.sortable.alternance tr')).slice(1);
 		
 		const header = rows[0];
 
-		dates = Array.from(header.children, th => parseInt(th.textContent));
-
-		dateInput.max = dates.length-1;
-		dateInput.value = dates.length-1;
+		const density = {};
+		const dates = Array.from(header.children, th => parseInt(th.textContent));
 
 		for (let i=1; i<rows.length; i++) {
 			const tr = rows[i];
@@ -93,52 +144,12 @@ d3.json('https://rawgit.com/kerneis/france-choropleth/master/data/geofla/departe
 			// note td.colSpan is undefined wit DOMParser
 		}
 
-		var values = Object.keys(density).map(i => density[i][5]);
-		
-		color = d3.scale.log()
-		.domain([d3.min(values), d3.mean(values), d3.max(values)])
-		.range(["blue", "orange", "red"]);
-			/*console.log(geojson.features.map(function(i){return i.properties.CODE_DEPT}).sort())
-		console.log(Object.keys(density).sort())
-		*/
-		
-		features = d3.select('#map').append("svg")
-		.attr("width", width)
-		.attr("height", height)
-		.append("g")
-		.attr("id", "departements")
-		.selectAll("path")
-		.data(geojson.features);
+		localStorage.caubPopulationDensity = JSON.stringify({time: Date.now(), data: {geojson, density, dates}});
 
-		features.enter()
-		.append("path")
-		.attr('class', 'departement')
-		.attr('fill', function(d) { 
-			return color((density[d.properties.CODE_DEPT]||Array.from({length:dates.length},()=>0))[+dateInput.value])
-		})
-		.attr("d", path)
-		
-		dateSpan.textContent = dates[+dateInput.value];
-	})
-});
-
-dateInput.onchange = function(e){
-	d3.selectAll(".departement")
-	.attr('fill', function(d) {
-		return color((density[d.properties.CODE_DEPT]||Array.from({length:dates.length},()=>0))[+dateInput.value])
+		return {geojson, density, dates};
 	});
-	dateSpan.textContent = dates[+dateInput.value]
 }
 
-function load() {
-	if (localStorage.caubPopulationDensity) {
-		var cache = JSON.parse(localStorage.caubPopulationDensity);
-		if (Date.now() < cache.time + 7*86.4e6) {
-			return Promise.resolve(cache.data);
-		}
-	}
-	
-}
 
 
 /*
