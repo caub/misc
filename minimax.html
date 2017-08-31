@@ -2,7 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width" />
 	<script src="https://rawgit.com/Canop/hu.js/master/hu.js"></script>
 </head>
 <body>
@@ -52,36 +53,36 @@ for (var depth = 1; depth <= maxDepth; depth++) {
 //console.log('visitDepthFirst',visitDepthFirst(root).map(function(x){return x.id}))
 
 function minimax(node){
-    // if node.me it's a maximlizer node with a lower bound
-    // else it's a minimizer with a higher bound
-    if (!node.children || !node.children.length)
-        return node.score
-        
-    var isMaximizer = !(node.depth % 2);
-    for(var child of node.children){
-        // check if we need to see next child
-        // node.score is the current score being updated after each child visit, and it serves as a bound for pruning
-        if(node.parent && node.parent.score && (isMaximizer && node.score>=node.parent.score || !isMaximizer && node.score<=node.parent.score)){
-            //we don't need to explore other children = pruning
+	// if node.me it's a maximlizer node with a lower bound
+	// else it's a minimizer with a higher bound
+	if (!node.children || !node.children.length)
+		return node.score
+		
+	var isMaximizer = !(node.depth % 2);
+	for(var child of node.children){
+		// check if we need to see next child
+		// node.score is the current score being updated after each child visit, and it serves as a bound for pruning
+		if(node.parent && node.parent.score && (isMaximizer && node.score>=node.parent.score || !isMaximizer && node.score<=node.parent.score)){
+			//we don't need to explore other children = pruning
 			if (isMaximizer && node.score>=node.parent.score)
 				console.log(node.id, "pruning at a maximizer node.score<node.parent.score, it's not worth exploring other children", node.score, node.parent.score)
 			else if(!isMaximizer && node.score<=node.parent.score)
 				console.log(node.id, "pruning at a minimizer node.score<node.parent.score, it's not worth exploring other children", node.score, node.parent.score)
-            break;
-        }else {
-            var score = minimax(child)
-            if(!isNaN(score)){
-                if (node.score!==undefined){
-                    if (isMaximizer)
-                        node.score=Math.max(node.score, score)
-                    else
-                        node.score=Math.min(node.score, score)
-                }else
-                    node.score=score
-            }
-        }
-    }
-    return node.score
+			break;
+		}else {
+			var score = minimax(child)
+			if(!isNaN(score)){
+				if (node.score!==undefined){
+					if (isMaximizer)
+						node.score=Math.max(node.score, score)
+					else
+						node.score=Math.min(node.score, score)
+				}else
+					node.score=score
+			}
+		}
+	}
+	return node.score
 }
 
 console.log('best:', minimax(root) );
@@ -107,37 +108,37 @@ var triangleOpponent = 'M 0 0 L 30 0 L 15 30 L 0 0';
 var triangleMe = 'M 0 30 L 30 30 L 15 0 L 0 30'
 
 for (var i=0; i<levels.length; i++) {
-    for(var j=0; j<levels[i].length; j++){
-        var node = levels[i][j];
-        var dj=svg.width()/(levels[i].length+1)
-        var g = ù('<svg>', svg)
-        .attr({x:dj*(j+1), y:60*i+20})
-        .attr({width:radius*2,height:radius*2})
-        .css({cursor:'pointer'})
+	for(var j=0; j<levels[i].length; j++){
+		var node = levels[i][j];
+		var dj=svg.width()/(levels[i].length+1)
+		var g = ù('<svg>', svg)
+		.attr({x:dj*(j+1), y:60*i+20})
+		.attr({width:radius*2,height:radius*2})
+		.css({cursor:'pointer'})
 
-        ù('<path>', g)
-        .attr('d', node.depth % 2?triangleOpponent:triangleMe)
-        .attr('fill', node.depth % 2?gradOpponent:gradMe)
-        
-        ù('<text>', g)
-        .attr({x:radius, y:6, textAnchor:"middle", alignmentBaseline:"middle"})
-        .css({fontSize:'10px', fill:'gray'})
-        .text(node.id)  
-        
-        var vText = ù('<text>', g)
-        .attr({x:radius, y:radius+5, textAnchor:"middle", alignmentBaseline:"middle"})
-        .css({fontSize:'16px', fill:'black', fontWeight:'bold'})
-        .text(node.score!==undefined?node.score:'');
-        
-        if(node.parent){ // a link to the parent
-            ù('<line>', svg).attr({
-                x1:+node.parent.svg.attr('x')+radius, y1:+node.parent.svg.attr('y')+2*radius, x2:+g.attr('x')+radius, y2:+g.attr('y'),
-                stroke:'#aa3333', strokeOpacity:1,
-                strokeWidth:1, strokeLinecap:'round'
-            })
-        }
-        node.svg = g;
-    }
+		ù('<path>', g)
+		.attr('d', node.depth % 2?triangleOpponent:triangleMe)
+		.attr('fill', node.depth % 2?gradOpponent:gradMe)
+		
+		ù('<text>', g)
+		.attr({x:radius, y:6, textAnchor:"middle", alignmentBaseline:"middle"})
+		.css({fontSize:'10px', fill:'gray'})
+		.text(node.id)  
+		
+		var vText = ù('<text>', g)
+		.attr({x:radius, y:radius+5, textAnchor:"middle", alignmentBaseline:"middle"})
+		.css({fontSize:'16px', fill:'black', fontWeight:'bold'})
+		.text(node.score!==undefined?node.score:'');
+		
+		if(node.parent){ // a link to the parent
+			ù('<line>', svg).attr({
+				x1:+node.parent.svg.attr('x')+radius, y1:+node.parent.svg.attr('y')+2*radius, x2:+g.attr('x')+radius, y2:+g.attr('y'),
+				stroke:'#aa3333', strokeOpacity:1,
+				strokeWidth:1, strokeLinecap:'round'
+			})
+		}
+		node.svg = g;
+	}
 }
 </script>
 

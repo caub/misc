@@ -1,27 +1,63 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width" />
 
 <style>
 body {
-	text-align: center
+	font-family: Arial;
+	color: rgba(0,0,0,.9);
+	background: rgba(240,240,240,.6);
 }
 table, th, td {
-    border: 1px solid black;
-	margin: 5px auto;
+	border: 1px solid black;
+	margin: 3em auto 2em;
+	border-collapse: collapse;
+	font-size: 120%;
 }
 td {
-    width: 50px;
-    height: 50px;
-    text-align: center;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+}
+button {
+	font-size: 1.2em;
+	margin: 4px;
+	padding: 5px 15px;
+	color: rgba(0,0,0,.9);
+}
+kbd {
+	padding: 5px 20px;
+	font-size: 2em;
+}
+.r {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: .5em;
+	position: relative;
+}
+#hintvalue {
+	font-size: 1.8em;
+	padding: 4px 8px;
+	display: inline-flex;
+	justify-content: center;
+	width: 30px;
 }
 </style>
 </head>
 <body>
-<table></table>
-<button id=init>init</button><button id=runai>run AI</button><button id=hint>hint</button><span id=hintvalue></span>
+
+<table title="press arrow keys"></table>
+
+<div class="r">
+	<button id=init>init</button>
+	<button id=runai>run AI</button>
+	<span id="hintvalue" title="Best move to do, use your arrow keys"></span>
+</div>
+
+
 <script>
 // 2048 AI
 
@@ -173,7 +209,8 @@ function updateUI(ai) {
 		})
 	});
 }
-updateUI(ai)
+updateUI(ai);
+updateHint(ai);
 
 function runAI() {
 	var p = predict(ai);
@@ -195,14 +232,16 @@ runai.onclick = function() {
 }
 
 
-hint.onclick = function() {
-	hintvalue.innerHTML = ['up', 'right', 'down', 'left'][predict(ai)]
+function updateHint(ai) {
+	hintvalue.innerHTML = ['↑', '→', '↓', '←'][predict(ai)]
 }
+
 document.addEventListener("keydown", function(event) {
 	if (event.which in map) {
 		move(map[event.which], ai)
 		console.log(stats(ai.grid))
-		updateUI(ai)
+		updateUI(ai);
+		updateHint(ai);
 	}
 })
 var map = {
@@ -213,7 +252,8 @@ var map = {
 };
 init.onclick = function() {
 	initialize(ai);
-	updateUI(ai)
+	updateUI(ai);
+	updateHint(ai);
 }
 
 
