@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Population density in France</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+	html, body, #map {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+.stations, .stations svg {
+	position: absolute;
+}
+
+.stations svg {
+	width: 60px;
+	height: 20px;
+	padding-right: 100px;
+	font: 10px sans-serif;
+}
+
+.stations circle {
+	fill: brown;
+	stroke: black;
+	stroke-width: 1.5px;
+}
+</style>
+</head>
+<body>
+<input id=dateInput type='range' min=0> <span id=dateSpan></span>
+<div id="map"></div>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<script>
+// may 2015
+
+
+var width = 400;
+var height = 350;
+
+/*var map = new google.maps.Map(d3.select("#map").node(), {
+  zoom: 8,
+  center: new google.maps.LatLng(37.76487, -122.41948),
+  mapTypeId: google.maps.MapTypeId.TERRAIN
+});*/
+
+var dates=[], density = {}, features, color; // initialized after ajax
+
+var path = d3.geo.path();
+
+var projection = d3.geo.conicConformal() // Lambert-93
+.center([2.454071, 47.279229])
+.scale(2000)
+.translate([width / 2, height / 2]);
+
+path.projection(projection);
+
+//TODO use queue http://bl.ocks.org/mbostock/4060606
+// other todo: http://zbryikt.github.io/visualize/dorling/
+d3.json('https://rawgit.com/kerneis/france-choropleth/master/data/geofla/departement.json', function(req, geojson) {
+	fetch('https://cors-anywhere.herokuapp.com/https://fr.wikipedia.org/wiki/Liste_des_d%C3%A9partements_fran%C3%A7ais_class%C3%A9s_par_population_et_superficie')
+		.then(r => r.text())
+		.then(r => {
+		const doc=(new DOMParser).parseFromString(r, "text/xml");
+		const rows = Array.from(doc.querySelectorAll('table.wikitable.sortable.alternance tr')).slice(1);
+		
+		const header = rows[0];
+
+		dates = Array.from(header.children, th => parseInt(th.textContent));
+
+		dateInput.max = dates.length-1;
+		dateInput.value = dates.length-1;
+
+		for (let i=1; i<rows.length; i++) {
+			const tr = rows[i];
+			const depId = tr.children[1].textContent;
+			const area = parseInt(tr.children[tr.childElementCount - 2].querySelector('span').textContent.replace(/\s+/g,''));
+
+			density[depId] = Array.from(tr.children).slice(3, -2).reduce((a, td) => 
+				a.concat(
+					Array.from({length:td.getAttribute('colspan')||1}, () => td.textContent ? 
+						parseInt(td.querySelector('span').textContent.replace(/\s+/g,'')) / area :
+						0
+					)
+				), []
+			);
+			// note td.colSpan is undefined wit DOMParser
+		}
+
+		var values = Object.keys(density).map(i => density[i][5]);
+		
+		color = d3.scale.log()
+		.domain([d3.min(values), d3.mean(values), d3.max(values)])
+		.range(["blue", "orange", "red"]);
+			/*console.log(geojson.features.map(function(i){return i.properties.CODE_DEPT}).sort())
+		console.log(Object.keys(density).sort())
+		*/
+		
+		features = d3.select('#map').append("svg")
+		.attr("width", width)
+		.attr("height", height)
+		.append("g")
+		.attr("id", "departements")
+		.selectAll("path")
+		.data(geojson.features);
+
+		features.enter()
+		.append("path")
+		.attr('class', 'departement')
+		.attr('fill', function(d) { 
+			return color((density[d.properties.CODE_DEPT]||Array.from({length:dates.length},()=>0))[+dateInput.value])
+		})
+		.attr("d", path)
+		
+		dateSpan.textContent = dates[+dateInput.value];
+	})
+});
+
+dateInput.onchange = function(e){
+	d3.selectAll(".departement")
+	.attr('fill', function(d) {
+		return color((density[d.properties.CODE_DEPT]||Array.from({length:dates.length},()=>0))[+dateInput.value])
+	});
+	dateSpan.textContent = dates[+dateInput.value]
+}
+
+function load() {
+	if (localStorage.caubPopulationDensity) {
+		var cache = JSON.parse(localStorage.caubPopulationDensity);
+		if (Date.now() < cache.time + 7*86.4e6) {
+			return Promise.resolve(cache.data);
+		}
+	}
+	
+}
+
+
+/*
+var overlay = new google.maps.OverlayView();
+
+	// Add the container when the overlay is added to the map.
+	overlay.onAdd = function() {
+		var layer = d3.select(this.getPanes().overlayLayer).append("div")
+		.attr("class", "stations");
+
+		overlay.draw = function() {
+			var features = deps
+			.selectAll("path")
+			.data(geojson.features);
+
+			var colorScale = d3.scale.category20c();
+
+			features.enter()
+			.append("path")
+			.attr('class', 'departement')
+			.attr('fill', function(d) { 
+				return colorScale(+d.properties.CODE_DEPT); 
+			})
+			.attr("d", path)
+	
+			var projection = this.getProjection(),
+				padding = 10;
+
+			var marker = layer.selectAll("svg")
+			.data(d3.entries(data))
+			.each(transform) // update existing markers
+			.enter().append("svg:svg")
+			.each(transform)
+			.attr("class", "marker");
+
+			// Add a circle.
+			marker.append("svg:circle")
+			.attr("r", 4.5)
+			.attr("cx", padding)
+			.attr("cy", padding);
+
+			// Add a label.
+			marker.append("svg:text")
+			.attr("x", padding + 7)
+			.attr("y", padding)
+			.attr("dy", ".31em")
+			.text(function(d) { return d.key; });
+
+			function transform(d) {
+				d = new google.maps.LatLng(d.value[1], d.value[0]);
+				d = projection.fromLatLngToDivPixel(d);
+				return d3.select(this)
+				.style("left", (d.x - padding) + "px")
+				.style("top", (d.y - padding) + "px");
+			}
+		};
+	};
+
+	// Bind our overlay to the map
+	overlay.setMap(map);*/
+
+
+/*fetch('https://rawgit.com/kerneis/france-choropleth/master/data/geofla/departement.json').then(r => r.json()).then(function(r){
+	console.log(r)
+})
+//https://rawgit.com/alignedleft/d3-book/master/chapter_12/us-states.json
+*/
+
+
+/*yql(`select * from html where url='http://fr.wikipedia.org/wiki/Liste_des_d%C3%A9partements_fran%C3%A7ais_class%C3%A9s_par_population_et_superficie'`).then(function(r){
+	var doc=(new DOMParser).parseFromString(r, "text/xml");
+	
+	population2 = [].slice.apply(doc.querySelectorAll('table.wikitable.sortable.alternance tbody tr')).slice(1).map(function(e){
+		return {
+			id: +e.childNodes[9].innerHTML,
+			name: e.childNodes[1].childNodes[0].innerHTML,
+			pop1931: e.childNodes[2].childNodes[0].innerHTML,
+			pop1999: e.childNodes[3].childNodes[0].innerHTML,
+			pop2008: e.childNodes[4].childNodes[0].innerHTML,
+			pop2010: e.childNodes[5].childNodes[0].innerHTML,
+			pop2011: e.childNodes[6].childNodes[0].innerHTML,
+			area: e.childNodes[7].childNodes[0].innerHTML,
+		}
+	})
+	
+	population = {};
+	populations2.forEach(function(o){ population[o.id]=o.pop2011 })
+	
+	
+})
+*/
+
+
+</script>
+
+</body>
+</html>
+
+
+

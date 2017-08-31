@@ -9,4 +9,5 @@ Some more or less old code
 - [Infinite clock](//caub.github.io/misc/infinite-clock)
 - [Minimax](//caub.github.io/misc/minimax)
 - [Optimize jpeg/png in browser](//caub.github.io/misc/optim)
+- [Population density map in France](//caub.github.io/misc/population-density)
 - [Streams with fetch](//caub.github.io/misc/stream)
