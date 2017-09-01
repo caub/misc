@@ -93,9 +93,9 @@ function ruzzle(dic){
 
 			// if (d2 > rad*rad ) return; // ignore the corners
 
-			const y = rows.findIndex(row =>  (row-e.pageX)*(row-e.pageX) <= rad*rad*.8);
+			const y = rows.findIndex(row =>  (row-e.pageX)*(row-e.pageX) <= rad*rad*.6);
 			if (y===-1) return;
-			const x = cols.findIndex(col =>  (col-e.pageY)*(col-e.pageY) <= rad*rad*.8);
+			const x = cols.findIndex(col =>  (col-e.pageY)*(col-e.pageY) <= rad*rad*.6);
 			if (x===-1) return;
 
 			// var x = td.parentNode.rowIndex;

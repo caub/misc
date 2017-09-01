@@ -54,7 +54,7 @@ kbd {
 <div class="r">
 	<button id=init>init</button>
 	<button id=runai>run AI</button>
-	<span id="hintvalue" title="Best move to do, use your arrow keys"></span>
+	<span id="hintvalue" title="Best predicted move to do, use your arrow keys"></span>
 </div>
 
 
@@ -234,7 +234,7 @@ runai.onclick = function() {
 
 
 function updateHint(ai) {
-	hintvalue.innerHTML = ['↑', '→', '↓', '←'][predict(ai)]
+	hintvalue.innerHTML = ['↑', '→', '↓', '←'][predict(ai)] || '';
 }
 
 document.addEventListener("keydown", function(event) {
