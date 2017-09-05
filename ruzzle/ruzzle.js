@@ -82,68 +82,65 @@ function ruzzle(dic){
 		const rows = Array.from({length: table.rows.length}, (_,i) => rect.left + rad + i*(rect2.left-rect.left) + window.scrollX);
 		const cols = Array.from({length: table.rows.length}, (_,i) => rect.top + rad + i*(rect2.left-rect.left) + window.scrollY);
 
-		const r = move(event, table, e => {
-			// var td = e.target.closest('td');
-			// if (!td) return;
-			// var rect = td.getBoundingClientRect(), rad = rect.width/2;
-			
-			// const d2 = (rect.left+rad-e.clientX)**2 + (rect.top+rad-e.clientY)**2;
-			// console.log('move', e.clientX, e.clientY, rect.left+rad, rect.top+rad, e.target);
-			// for some shit reason, on mobile only, e.target stays the same original
+		cancel = move(event, table, {
+			update: e => {
+				// var td = e.target.closest('td');
+				// if (!td) return;
+				// var rect = td.getBoundingClientRect(), rad = rect.width/2;
+				
+				// const d2 = (rect.left+rad-e.clientX)**2 + (rect.top+rad-e.clientY)**2;
+				// console.log('move', e.clientX, e.clientY, rect.left+rad, rect.top+rad, e.target);
+				// for some shit reason, on mobile only, e.target stays the same original
 
-			// if (d2 > rad*rad ) return; // ignore the corners
+				// if (d2 > rad*rad ) return; // ignore the corners
 
-			const y = rows.findIndex(row =>  (row-e.pageX)*(row-e.pageX) <= rad*rad*.6);
-			if (y===-1) return;
-			const x = cols.findIndex(col =>  (col-e.pageY)*(col-e.pageY) <= rad*rad*.6);
-			if (x===-1) return;
+				const y = rows.findIndex(row =>  (row-e.pageX)*(row-e.pageX) <= rad*rad*.6);
+				if (y===-1) return;
+				const x = cols.findIndex(col =>  (col-e.pageY)*(col-e.pageY) <= rad*rad*.6);
+				if (x===-1) return;
 
-			// var x = td.parentNode.rowIndex;
-			// var y = td.cellIndex;
-			const td = table.rows[x].cells[y];
+				// var x = td.parentNode.rowIndex;
+				// var y = td.cellIndex;
+				const td = table.rows[x].cells[y];
 
-			if (path.find(p => p[0]===x && p[1]===y)) return; // already used, exit
-			
-			if(Math.abs(X-x)<=1 && Math.abs(Y-y)<=1 ){ // you can move only to contiguous cells
-				td.style.backgroundColor = "yellow";
-				X = x;
-				Y = y;
-				path.push([X,Y]);
-				document.getElementById("text").textContent = path.map(a => table.rows[a[0]].cells[a[1]].textContent).join('');
-			}
-		});
-
-		cancel = r.cancel;
-
-		r.promise.catch(console.error)
-		.then(() => { // finished moving
-			for (var i=0;i<path.length;i++){
-				table.rows[path[i][0]].cells[path[i][1]].style.backgroundColor = "";
-			}
-			var word = path.map(a => table.rows[a[0]].cells[a[1]].textContent).join('');
-			var inWord = words.includes(word);
-			var inDic = dic.includes(word)
-			if (word.length>1) {
-				if (!inWord && inDic){ //valid word
-					var pts = word.split('').reduce((pts, letter) => pts + points[letter], 0 )
-					for (var i=path.length-1;i>=0;i--){
-						if (path[i][0]==x3[0] && path[i][1]==x3[1])
-							pts *=3;
-						else if (path[i][0]==x2[0] && path[i][1]==x2[1])
-							pts *=2;
-					}
-					document.getElementById("points").textContent = "+"+pts;
-					document.getElementById("score").textContent = +document.getElementById("score").textContent + pts;
-					audioSuccess.play();
-				}else if (inWord){
-					audioDone.play();
-				}else if (!inDic){
-					audioFail.play();
+				if (path.find(p => p[0]===x && p[1]===y)) return; // already used, exit
+				
+				if(Math.abs(X-x)<=1 && Math.abs(Y-y)<=1 ){ // you can move only to contiguous cells
+					td.style.backgroundColor = "yellow";
+					X = x;
+					Y = y;
+					path.push([X,Y]);
+					document.getElementById("text").textContent = path.map(a => table.rows[a[0]].cells[a[1]].textContent).join('');
 				}
-				words.push(word);
+			},
+			end() { // finished moving
+				for (var i=0;i<path.length;i++){
+					table.rows[path[i][0]].cells[path[i][1]].style.backgroundColor = "";
+				}
+				var word = path.map(a => table.rows[a[0]].cells[a[1]].textContent).join('');
+				var inWord = words.includes(word);
+				var inDic = dic.includes(word)
+				if (word.length>1) {
+					if (!inWord && inDic){ //valid word
+						var pts = word.split('').reduce((pts, letter) => pts + points[letter], 0 )
+						for (var i=path.length-1;i>=0;i--){
+							if (path[i][0]==x3[0] && path[i][1]==x3[1])
+								pts *=3;
+							else if (path[i][0]==x2[0] && path[i][1]==x2[1])
+								pts *=2;
+						}
+						document.getElementById("points").textContent = "+"+pts;
+						document.getElementById("score").textContent = +document.getElementById("score").textContent + pts;
+						audioSuccess.play();
+					}else if (inWord){
+						audioDone.play();
+					}else if (!inDic){
+						audioFail.play();
+					}
+					words.push(word);
+				}
+				//counts the points
 			}
-			//counts the points
-			
 		});
 
 	};
@@ -233,19 +230,17 @@ function ruzzleSolve(dic){ // todo pass html data as arg, to make it more pure
 
 
 // move/drag element helper
-function move(e, moveContainer, cb) {
-	let res = () => {}; // linking here asynchonously the resolve of the promise, ugly
+function move(e, moveContainer, {update=()=>{}, end=()=>{}}) {
+
 	const up = e => {
 		document.removeEventListener('pointerup', up);
-		moveContainer.removeEventListener('pointermove', cb);
-		res();
+		moveContainer.removeEventListener('pointermove', update);
+		end();
 	};
 
-	const promise = new Promise((resolve, reject) => { // never resolve until you cancel or pointerup
-		cb(e); // trigger it now also
-		document.addEventListener('pointerup', up);
-		moveContainer.addEventListener('pointermove', cb);
-		res = resolve;
-	});
-	return {cancel: up, promise};
+	update(e); // trigger it now also
+	document.addEventListener('pointerup', up);
+	moveContainer.addEventListener('pointermove', update);
+	
+	return up; // return the 'cancel' function
 }
