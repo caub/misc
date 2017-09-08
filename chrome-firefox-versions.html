@@ -7,11 +7,11 @@
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.17/c3.min.css">
 </head>
 <body>
-<h3>using c3js</h3>
-<div id="chart"></div>
-
-<h3>using chartjs</h3>
+<h3>chartjs</h3>
 <canvas id="myChart" width="400" height="200"></canvas>
+
+<h3>c3js</h3>
+<div id="chart"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
@@ -21,30 +21,6 @@
 	
 load()
 .then(({chromeData, ffData}) => {
-
-
-	var chart = c3.generate({
-		data: {
-			xs: {
-				'chrome': 'x1',
-				'firefox': 'x2',
-			},
-			columns: [
-				['x1'].concat(chromeData.map(o => o.x)),
-				['x2'].concat(ffData.map(o => o.x)),
-				['chrome'].concat(chromeData.map(o => o.y)),
-				['firefox'].concat(ffData.map(o => o.y))
-			]
-		},
-		axis: {
-			x: {
-				type: 'timeseries',
-				tick: {
-					format: '%Y-%m-%d'
-				}
-			}
-		}
-	});
 
 	var ctx = document.getElementById("myChart").getContext('2d');
 	var myChart = new Chart(ctx, {
@@ -71,7 +47,7 @@ load()
 				text:'Chrome Vs Firefox versions'
 			},
 			tooltips: {
-				mode: 'index',
+				mode: 'x',
 				intersect: false,
 			},
 			hover: {
@@ -93,6 +69,29 @@ load()
 						beginAtZero:true
 					}
 				}]
+			}
+		}
+	});
+
+	var chart = c3.generate({
+		data: {
+			xs: {
+				'chrome': 'x1',
+				'firefox': 'x2',
+			},
+			columns: [
+				['x1'].concat(chromeData.map(o => o.x)),
+				['x2'].concat(ffData.map(o => o.x)),
+				['chrome'].concat(chromeData.map(o => o.y)),
+				['firefox'].concat(ffData.map(o => o.y))
+			]
+		},
+		axis: {
+			x: {
+				type: 'timeseries',
+				tick: {
+					format: '%Y-%m-%d'
+				}
 			}
 		}
 	});
