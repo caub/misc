@@ -2,7 +2,6 @@
 <output id="output">
 	Drop/select some jpegs/pngs
 </output>
-
 <style>
 svg,
 img {
@@ -24,6 +23,29 @@ body {
 td {
 	border: 1px solid rgba(0, 0, 0, .1);
 	padding: 4px 8px;
+}
+@keyframes loader {
+	0% {
+		content: "";
+	}
+	25% {
+		content: ".";
+	}
+	50% {
+		content: "..";
+	}
+	75% {
+		content: "...";
+	}
+	100% {
+		content: "...";
+	}
+}
+
+.loader::after {
+	content: "wow";
+	animation: loader 2s linear infinite;
+	display: inline-block;
 }
 </style>
 
@@ -57,6 +79,7 @@ function processFiles(files) {
 		const ori = row.insertCell(); // original file
 		ori.textContent = `${file.name}: ${Math.round(file.size/1000)}KB`;
 		const xx = row.insertCell(); // processed by server
+		xx.innerHTML = `<span class="loader"></span>`;
 		var buf = await readAsArrayBuffer(file);
 		const res = await optimize(new Uint8Array(buf), file.type);
 		const blob = new Blob([res.data], {type: file.type});
