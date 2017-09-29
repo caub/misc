@@ -69,15 +69,23 @@ footer {
 		const a = "ABCDE";
 		const graph = {}; // id => {refs: setOfIds, deps: setOfIds, cell: currentCell, value: initalValue}
 
-
-		const calc = (id, callers = new Set()) => { // callers is to avoid loops
+		// todo logs stuff
+		const update = id => {
 			const node = graph[id];
 			const cellValue = node.cell.value.trim();
-			const value = node.value!==undefined ? node.value : cellValue;
 
-			if (value[0] === '='){
-				node.value = value;
-				const refs = value.match(/[A-Z]\d/g) || [];
+			node.value = undefined;
+
+			// remove previous deps/refs
+			node.refs.forEach(x => {
+				graph[x].deps.delete(id);
+			});
+			node.refs = new Set();
+
+			if (cellValue[0] === '='){
+				node.value = cellValue;
+
+				const refs = cellValue.match(/[A-Z]\d/g) || [];
 
 				// update graph
 				node.refs = new Set(refs);
@@ -85,37 +93,28 @@ footer {
 					graph[x].deps.add(id);
 				});
 
-				if (callers.has(id)) {
-					node.cell.value = '#REF';
-					return value;
-				}
-
-				callers.add(id);
 				try {
-					const evaling = value.slice(1).replace(/[A-Z]\d/g, x => calc(x, callers));
+					const evaling = cellValue.slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value);
 					const evaled = eval(evaling);
 					node.cell.value = evaled;
-					return evaled;
 				} catch(e){
 					node.cell.value = NaN;
 					console.error(e);
-					return NaN;
 				}
 			}
-			return value || 0;
 		};
 
-		// update deps, using just computed values
-		const update = id => {
+		const calc = (id, visited = new Set()) => {
 			const node = graph[id];
+			visited.add(id);
 			node.deps.forEach(x => {
 				const n = graph[x];
 				try {
-					n.cell.value = eval(n.value.trim().slice(1).replace(/[A-Z]\d/g, r => graph[r].cell.value));
+					n.cell.value = eval(n.value.trim().slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value));
 				} catch(e) {
 					n.cell.value = NaN;
 				}
-				update(x); // recurse down
+				calc(x, visited); // recurse down
 			});
 		};
 
@@ -124,21 +123,15 @@ footer {
 				const id = a[j]+(+i+1);
 				const input = document.createElement('input');
 				input.id = input.placeholder = id;
-				input.onchange = e => {
-					graph[e.target.id].value = undefined;
-				};
 				input.onfocus = e => { // show formula if any
 					e.target.value = graph[e.target.id].value || e.target.value
 				};
 				input.onblur = e => {
-					calc(e.target.id);
-					// update deps
 					update(e.target.id);
-				}
+					calc(e.target.id);// update deps
+				};
 				input.onkeydown = e => {
 					if (e.key !== 'Enter') return;
-					calc(e.target.id);
-					update(e.target.id);
 					// focus next cell
 					const next = input.nextElementSibling || grid.firstElementChild;
 					next.focus();
