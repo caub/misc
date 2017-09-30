@@ -94,7 +94,7 @@ footer {
 				});
 
 				try {
-					const evaling = cellValue.slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value);
+					const evaling = cellValue.slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value || 0);
 					const evaled = eval(evaling);
 					node.cell.value = evaled;
 				} catch(e){
@@ -110,7 +110,7 @@ footer {
 			node.deps.forEach(x => {
 				const n = graph[x];
 				try {
-					n.cell.value = eval(n.value.trim().slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value));
+					n.cell.value = eval(n.value.trim().slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value || 0));
 				} catch(e) {
 					n.cell.value = NaN;
 				}
