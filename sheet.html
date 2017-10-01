@@ -93,6 +93,10 @@ footer {
 					graph[x].deps.add(id);
 				});
 
+				if (node.refs.has(id)) {
+					return node.cell.value = '#REF';
+				}
+
 				try {
 					const evaling = cellValue.slice(1).replace(/[A-Z]\d/g, x => graph[x].cell.value || 0);
 					const evaled = eval(evaling);
@@ -106,6 +110,10 @@ footer {
 
 		const calc = (id, visited = new Set()) => {
 			const node = graph[id];
+			if (visited.has(id)) {
+				n.cell.value = '#REF';
+				return console.info('loop detected', visited, '->', id);
+			}
 			visited.add(id);
 			node.deps.forEach(x => {
 				const n = graph[x];
