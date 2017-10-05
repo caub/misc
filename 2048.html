@@ -210,14 +210,15 @@ function updateUI(ai) {
 	});
 }
 updateUI(ai);
-updateHint(ai);
+updateHint(predict(ai));
 
 function runAI() {
 	var p = predict(ai);
 	if (p != null && ai.running) {
-		move(p, ai)
-		updateUI(ai)
-		requestAnimationFrame(runAI)
+		move(p, ai);
+		updateUI(ai);
+		updateHint(p);
+		requestAnimationFrame(runAI);
 	}
 }
 runai.onclick = function() {
@@ -228,13 +229,13 @@ runai.onclick = function() {
 	} else {
 		this.innerHTML = 'run AI';
 		ai.running = false;
-		updateHint(ai);
+		updateHint(predict(ai));
 	}
 }
 
 
-function updateHint(ai) {
-	hintvalue.innerHTML = ['↑', '→', '↓', '←'][predict(ai)] || '';
+function updateHint(dir) {
+	hintvalue.innerHTML = ['↑', '→', '↓', '←'][dir] || '';
 }
 
 document.addEventListener("keydown", function(event) {
@@ -242,7 +243,7 @@ document.addEventListener("keydown", function(event) {
 		move(map[event.which], ai)
 		console.log(stats(ai.grid))
 		updateUI(ai);
-		updateHint(ai);
+		updateHint(predict(ai));
 	}
 })
 var map = {
@@ -254,7 +255,7 @@ var map = {
 init.onclick = function() {
 	initialize(ai);
 	updateUI(ai);
-	updateHint(ai);
+	updateHint(predict(ai));
 }
 
 
