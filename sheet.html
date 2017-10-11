@@ -130,13 +130,13 @@ footer {
 			for (const i in a) {
 				const id = a[j]+(+i+1);
 				const input = document.createElement('input');
-				input.id = input.placeholder = id;
+				input.placeholder = id;
 				input.onfocus = e => { // show formula if any
-					e.target.value = graph[e.target.id].value || e.target.value
+					e.target.value = graph[id].value || e.target.value
 				};
 				input.onblur = e => {
-					update(e.target.id);
-					calc(e.target.id);// update deps
+					update(id);
+					calc(id);// update deps
 				};
 				input.onkeydown = e => {
 					if (e.key !== 'Enter') return;
