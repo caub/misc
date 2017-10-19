@@ -1,0 +1,481 @@
+<style>
+/* ellipse and polygon editors: */
+svg {
+	position: absolute;
+	top: 0; left: 0;
+	width: 0;
+	height: 0;
+}
+
+
+rect {
+	stroke: rgb(0, 162, 255);
+	fill: none;
+	/*shape-rendering: crispEdges;*/
+}
+svg > circle {
+	pointer-events: none;
+}
+circle, ellipse, line, .frame {
+	stroke: rgb(0, 162, 255);
+	fill: rgba(0,0,0,0);
+/*	cx: 50%;
+	cy: 50%;*/
+	cursor: move;
+}
+g.rotate > line {
+	fill: none;
+	stroke: blue;
+	stroke-width: 2px;
+	stroke-linecap: round;
+	cursor: -webkit-grabbing;
+}
+
+g.lines line {
+	stroke: red;
+	cursor: crosshair;
+	stroke-width: 2px;
+}
+g.lines circle {
+	cursor: -webkit-grabbing;
+	stroke: red;
+}
+g.handles > rect {
+	width: 6px;
+	height: 6px;
+	fill: rgba(252,252,252,.7);
+	/*shape-rendering: crispEdges;*/
+/*	x: calc(100% - 6px);
+	y: calc(100% - 6px);*/
+}
+
+
+/*  shapes:  */
+img {
+	float: left;
+	width: 150px;
+	shape-image-threshold: 0.19;
+/* 	shape-outside: circle();
+	-webkit-clip-path: circle(); */
+	shape-outside: circle(50%);
+	-webkit-clip-path: circle(50%);
+	/*shape-margin: 5px;*/
+}
+
+p:nth-of-type(2) > img {
+	shape-outside: ellipse(50% 45%);
+	-webkit-clip-path: ellipse(50% 45%);
+}
+
+.shape {
+  /* shape-outside: ellipse(100px 200px at 50% 50%); */
+	shape-outside: polygon(25% 0, 100% 0, 100% 100%, 0 100%);
+	
+  float: right;
+	width: 200px;
+  height: 250px;
+  opacity: .2;
+  background: lightgreen;
+	/*outline: auto;*/
+}
+
+
+/* utils */
+.noselect {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+  font-family: Arial;
+}
+
+.page {
+	margin: 1em;
+}
+p {
+	text-align: justify;
+}
+
+body.hide svg {
+	display: none;
+}
+</style>
+
+<div class="page">
+	<div class="shape"></div>
+  
+  <h2>
+  CSS shape-outside + clip-path editor
+  </h2>
+ 
+ <pre>
+ API: 
+   - &lt;Ellipse el={someDOMElement}/&gt;
+   - &lt;Polygon el={someDOMElement}/&gt;
+ </pre> 
+
+<a href="https://www.html5rocks.com/en/tutorials/shapes/getting-started">inspired by this</a>
+
+	<p>Lorem ipsum dolor sit amet, <button class="rotate" onclick="document.body.classList.toggle('hide')">toggle editors</button> consectetur adipisicing elit. Officiis impedit libero esse odio excepturi fuga est ut itaque a quod suscipit, rerum asperiores. Consequuntur voluptates illo rerum recusandae pariatur asperiores, aspernatur, saepe ipsum error dolorem, quod inventore possimus modi deleniti tenetur et officiis. Nemo ab in totam ratione sequi error, ea dolorum repudiandae omnis, eaque facere impedit fugiat. Dolorum distinctio autem sequi enim quidem esse accusamus repudiandae voluptatum nobis, velit, molestiae. Eaque maiores, harum.<img src="http://cdn.arstechnica.net/wp-content/uploads/2016/02/5718897981_10faa45ac3_b-640x624.jpg"> Saepe esse repellendus sint. Labore provident optio quis commodi quod quaerat quo similique perspiciatis libero facere. Suscipit odit quas nemo, enim laudantium, provident repellendus natus nostrum facilis expedita adipisci qui, harum minus quidem officia cupiditate repellat ut praesentium. Possimus corporis, error atque ex adipisci, illum suscipit pariatur saepe impedit aliquam amet eos reiciendis quidem hic, nisi. Sint nobis modi, nesciunt quasi placeat quia. Veniam inventore corrupti quisquam illum debitis vitae accusamus nobis alias cum iste error magnam, cupiditate earum! Incidunt at consequuntur, rem ipsa odio ipsum deleniti repudiandae blanditiis harum ut in, fugit officia rerum ad, corporis dolore! Commodi repellendus esse quibusdam enim qui totam ipsum, consequuntur officia vel dolores, quod corrupti eveniet maiores minus explicabo, sapiente ratione doloribus laboriosam impedit nesciunt a obcaecati quam veritatis! Placeat, velit possimus delectus, atque voluptate iste alias illo, dolor odit ipsa facere quibusdam? Non omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores tempore. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Officiis impedit libero esse odio excepturi fuga est ut itaque a quod suscipit, rerum asperiores. Consequuntur voluptates illo rerum recusandae pariatur asperiores, aspernatur, saepe ipsum error dolorem, quod inventore possimus modi deleniti tenetur et officiis. Nemo ab in totam ratione sequi error, ea dolorum repudiandae omnis, eaque facere impedit fugiat. Dolorum distinctio autem sequi enim quidem esse accusamus repudiandae voluptatum nobis, velit, molestiae. Eaque maiores, harum. Saepe esse repellendus sint.
+
+
+	<p>Labore provident optio quis commodi quod quaerat quo similique perspiciatis libero facere. Suscipit odit quas nemo, enim laudantium, provident repellendus natus nostrum facilis expedita adipisci qui, harum minus quidem officia cupiditate repellat ut praesentium. Possimus corporis, error atque ex adipisci, illum suscipit pariatur saepe impedit aliquam amet eos reiciendis quidem hic, nisi. Sint nobis modi, nesciunt quasi placeat quia.	<img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2009/08/logosavedastransparentgif.png"> Veniam inventore corrupti quisquam illum debitis vitae accusamus nobis alias cum iste error magnam, cupiditate earum! Incidunt at consequuntur, rem ipsa odio ipsum deleniti repudiandae blanditiis harum ut in, fugit officia rerum ad, corporis dolore! Commodi repellendus esse quibusdam enim qui totam ipsum, consequuntur officia vel dolores, quod corrupti eveniet maiores minus explicabo, sapiente ratione doloribus laboriosam impedit nesciunt a obcaecati quam veritatis! Placeat, velit possimus delectus, atque voluptate iste alias illo, dolor odit ipsa facere quibusdam? Non omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores temporeNon omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores temporeNon omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores temporeNon omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores temporeNon omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores temporeNon omnis aliquid eveniet fuga labore dolores, autem blanditiis, dolorem error ex enim fugiat quisquam aut reprehenderit delectus, nihil accusamus eaque at odit natus accusantium sunt asperiores unde? Tempora dolorem, ad quidem quis adipisci dolores tempore</p>
+
+</div>
+
+<div id="circle"></div>
+<div id="ellipse"></div>
+<div id="polygon"></div>
+
+<script src="https://unpkg.com/react@16.0.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@16.0.0/umd/react-dom.production.min.js"></script>
+
+<script>
+const v = React.createElement;
+const {min, max, floor, round, abs, atan2, cos, sin, PI} = Math;
+
+
+// some utils functions
+function boundingbox(path){ // get bounding box of a path, a rect enclosing the path
+	let l=Infinity, t=Infinity, r=-Infinity, b=-Infinity; // left, top, right, bottom
+	for (let [x,y] of path){
+		l=min(l, x);
+		r=max(r, x);
+		t=min(t, y);
+		b=max(b, y);
+	}
+	return {x:(l+r)/2, y:(t+b)/2, rx:(r-l)/2, ry:(b-t)/2}; // x,y center and rx,ry radiuses
+}
+
+const rotate = ([x,y], a) => [cos(a)*x-sin(a)*y, sin(a)*x+cos(a)*y];
+
+// const translate = ([x,y], [dx,dy]) => [x+dx, y+dy];
+const scale = ([x,y], [ratioX, ratioY]) => [x*ratioX, y*ratioY];
+
+const projection = ([x1,y1], [x2,y2], [x3,y3]) => { // return projection of p3 on [p1,p2]
+	const u = ((x2-x1)*(x3-x1)+(y2-y1)*(y3-y1))/((x2-x1)**2+(y2-y1)**2);
+	return [x1+(x2-x1)*u, y1+(y2-y1)*u];
+}
+
+function* exec(re, s){
+	let x;
+	while(x=re.exec(s)){
+		yield x.slice(1);
+	}
+}
+
+
+// should rename them to Ellipse(Shape)Editor, Polygon(Shape)Editor
+// there was a Circle component, but it's a limited version of Ellipse, with only 4 resizers handles. It's possible to force an ellipse to be a circle by scaling down to the minimum 14px*14px	and then increase with preserving ratio
+class Ellipse extends React.PureComponent{
+
+	constructor(props){
+		super(props);
+
+		this.redraw = () => this.forceUpdate();
+
+		this.startMove = ({pageX, pageY}) => { // should rename in startTranslate
+			const {width, height} = this.props.el.getBoundingClientRect(),
+				{cX, cY} = this.state,
+				cx = cX*width/100, cy = cY*height/100;
+
+			const move  = e => {
+				this.setState({
+					cX: round((cx+e.pageX-pageX)*100/width), 
+					cY: round((cy+e.pageY-pageY)*100/height)
+				});
+			}, stopMove = e => {
+				document.removeEventListener('mousemove', move);
+				document.removeEventListener('mouseup', stopMove);
+			};
+			document.addEventListener('mousemove', move);
+			document.addEventListener('mouseup', stopMove);
+		};
+
+		const {shapeOutside} = getComputedStyle(props.el);
+		const [rX=50, rY=50, cX=50, cY=50] = shapeOutside.match(/(\d+)/g).map(x=>+x); // parse the current shape for this element, if any
+		this.state = {
+			cX, cY, rX, rY
+		};
+	}
+
+	startResize({pageX:pX, pageY:pY}, [xFactor, yFactor]) { 
+		const {width, height} = this.props.el.getBoundingClientRect(),
+			{rX, rY} = this.state,
+			rx = rX*width/100, ry = rY*height/100;
+
+		const move = !xFactor ? 
+		({pageY}) => {
+			this.setState({rY: round(max(20, ry+yFactor*(pageY - pY))*100/height)});
+		} : !yFactor ?
+		({pageX}) => {
+			this.setState({rX: round(max(21, rx+xFactor*(pageX - pX))*100/width)});
+		} : 
+		({pageX, pageY}) => {
+			const [dX,dY] = [(pageX-pX)*xFactor, (pageY-pY)*yFactor],
+				[deltaX, deltaY] = dX*ry-dY*rx<0 ? [dY*rx/ry, dY] : [dX, dX*ry/rx]; // proportional scaling
+			this.setState({
+				rX: round((rx+deltaX)*100/width),
+				rY: round((ry+deltaY)*100/height)
+			});
+		}, stopResize = e => {
+			document.removeEventListener('mousemove', move);
+			document.removeEventListener('mouseup', stopResize);
+			document.body.classList.remove('noselect');
+		};
+		document.addEventListener('mousemove', move);
+		document.addEventListener('mouseup', stopResize);
+		document.body.classList.add('noselect');
+	}
+
+	componentDidMount(){
+		window.addEventListener('resize', this.redraw);
+		this.props.el.onload = this.redraw; // image take time to load, just for tests
+		this.redraw();
+	}
+	componentWillUnmount(){
+		window.removeEventListener('resize', this.redraw)
+	}
+
+	componentDidUpdate(){
+		const {cX, cY, rX, rY} = this.state;
+		this.props.el.style.webkitClipPath =
+		this.props.el.style.shapeOutside = `ellipse(${rX}% ${rY}% at ${cX}% ${cY}%)`;
+	}
+
+	render(){
+		const {cX, cY, rX, rY} = this.state;
+		const {top, left, width, height} = this.props.el.getBoundingClientRect(); // this should be cached for perf and updated on mount and resize
+		const cx = cX*width/100, cy = cY*height/100, rx = rX*width/100, ry = rY*height/100;
+		// console.log([rX,rY], [rx,ry]);
+		// 4px margin around the svg
+		return v('svg', {style:{left:left+cx-rx-4+window.scrollX+'px', top:top+cy-ry-4+window.scrollY+'px', width:2*rx+8+'px', height:2*ry+8+'px'}},
+			v('ellipse', {cx:rx+4, cy:ry+4, rx, ry}),
+			v('rect', {className:'frame', x:4, y:4, width:2*rx, height:2*ry, onMouseDown:this.startMove, onDragStart:e=>e.preventDefault()}),
+			v('circle', {cx:rx+4, cy:ry+4, r:3}),
+
+			v('g', {className:'handles'},
+				
+				v('rect', { style:{cursor:'ns-resize'}, x:rx, y:1, 				onMouseDown:e=>this.startResize(e, [,-1]) }),
+				v('rect', { style:{cursor:'nesw-resize'}, x:2*rx, y:1, 		onMouseDown:e=>this.startResize(e, [1,-1]) }),
+				v('rect', { style:{cursor:'ew-resize'}, x:2*rx, y:ry, 		onMouseDown:e=>this.startResize(e, [1]) }),
+				v('rect', { style:{cursor:'nwse-resize'}, x:2*rx, y:2*ry, onMouseDown:e=>this.startResize(e, [1,1]) }),
+				v('rect', { style:{cursor:'ns-resize'}, x:rx, y:2*ry, 		onMouseDown:e=>this.startResize(e, [,1]) }),
+				v('rect', { style:{cursor:'nesw-resize'}, x:1, y:2*ry, 		onMouseDown:e=>this.startResize(e, [-1,1]) }),
+				v('rect', { style:{cursor:'ew-resize'}, x:1, y:ry, 				onMouseDown:e=>this.startResize(e, [-1]) }),
+				v('rect', { style:{cursor:'nwse-resize'}, x:1, y:1, 			onMouseDown:e=>this.startResize(e, [-1,-1]) })
+			)
+		)
+	}
+}
+
+// list of icons for resizing (north,ne,e,se,s,sw,w,nw)
+const ICONS = [
+	'ns-resize', 'nesw-resize', 'ew-resize', 'nwse-resize',
+	'ns-resize', 'nesw-resize', 'ew-resize', 'nwse-resize'
+];
+
+class Polygon extends React.PureComponent {
+
+	constructor(props){
+		super(props);
+		this.redraw = () => this.forceUpdate();
+
+		this.startMove = ({pageX, pageY}) => { // rename to startTranslate?
+			const {width, height} = this.props.el.getBoundingClientRect(),
+				{path} = this.state;
+
+			const move = e => {
+				const dx = (e.pageX-pageX)*100/width,
+					dy = (e.pageY-pageY)*100/height;
+				this.setState({ path: path.map(([x,y])=>[x+dx, y+dy]) });
+			}, stopMove = e => {
+				document.removeEventListener('mousemove', move);
+				document.removeEventListener('mouseup', stopMove);
+			};
+			document.addEventListener('mousemove', move);
+			document.addEventListener('mouseup', stopMove);
+		};
+
+		const {shapeOutside} = getComputedStyle(props.el);
+		let path = [...exec(/(\d+)\D+(\d+)/g, shapeOutside)].map(([x,y])=>[+x,+y]); // parse the current shape for this element, if any
+		if (!path.length) path = [[150,60], [110,110], [40,80]];
+		this.state = {
+			angle: 0,
+			path
+		};
+	}
+
+
+	startResize({pageX:pX, pageY:pY}, [xFactor,yFactor], {X,Y,rx,ry}) {
+		const {width, height} = this.props.el.getBoundingClientRect(),
+			{path, angle} = this.state, a = angle*PI/180,
+			pathpx = path.map(([x,y])=>rotate([x*width/100-X, y*height/100-Y], -a));
+		
+		const move = !xFactor ? 
+		({pageX, pageY}) => {
+			const [,dY] = rotate([pageX-pX, pageY-pY], -a);
+			this.setState({
+				path: pathpx
+					.map(([x,y])=>rotate([x, y+yFactor*dY*y/ry], a))
+					.map(([x,y])=>[round((x+X)*100/width), round((y+Y)*100/height)])
+			});
+		} : !yFactor ?
+		({pageX, pageY}) => {
+			var [dX] = rotate([pageX-pX, pageY-pY], -a);
+			this.setState({
+				path: pathpx
+					.map(([x,y])=>rotate([x+xFactor*dX*x/rx, y], a))
+					.map(([x,y])=>[round((x+X)*100/width), round((y+Y)*100/height)])
+			});
+		} : 
+		({pageX, pageY}) => {
+			const [dX,dY] = scale(rotate([pageX-pX, pageY-pY], -a), [xFactor, yFactor]),
+				[deltaX, deltaY] = dX*ry-dY*rx<0 ? [dY*rx/ry, dY] : [dX, dX*ry/rx];
+
+			this.setState({
+				path: pathpx
+					.map(([x,y])=>rotate([x+deltaX*x/rx, y+deltaY*y/ry], a))
+					.map(([x,y])=>[round((x+X)*100/width), round((y+Y)*100/height)]) // a bit glitchy with the round, can be removed
+			});
+		}, stopResize = e => {
+			document.removeEventListener('mousemove', move);
+			document.removeEventListener('mouseup', stopResize);
+			document.body.classList.remove('noselect');
+		};
+		document.addEventListener('mousemove', move);
+		document.addEventListener('mouseup', stopResize);
+		document.body.classList.add('noselect');
+	}
+
+	
+	startRotate({clientX:cX, clientY:cY}, {X,Y}) {
+		const {left, top, width, height}= this.props.el.getBoundingClientRect(),
+			{angle, path} = this.state,
+			pathpx = path.map(([x,y])=>[x*width/100-X, y*height/100-Y]),
+			angleStart = round(atan2(cY-Y-top, cX-X-left)*180/PI);
+
+		const move  = ({clientX, clientY}) => { // pageX?
+			const delta = round(atan2(clientY-Y-top, clientX-X-left)*180/PI)-angleStart, d = delta*PI/180;
+			//this.refs.el.style.transform = `rotate(${ang}deg)`;// in case it's too slow we could do that, and setState thing only on mouseup
+			// const path2 = pathpx.map(p=>scale(translate(rotate(p, a), [X,Y]), [100/width, 100/height]))
+			const path2 = pathpx.map(p=>rotate(p, d)).map(([x,y])=>[(x+X)*100/width, (y+Y)*100/height]);
+			this.setState({angle:delta+angle, path:path2});
+		}, stopMove = e => {
+			document.removeEventListener('mousemove', move);
+			document.removeEventListener('mouseup', stopMove);
+			document.body.classList.remove('noselect');
+		};
+		document.addEventListener('mousemove', move);
+		document.addEventListener('mouseup', stopMove);
+		document.body.classList.add('noselect');
+	}
+	
+	startEdit({pageX, pageY}, i) {  // todo preventDefault
+		const {left, top, width, height}= this.props.el.getBoundingClientRect(),
+			{path} = this.state, [X,Y] = path[i];
+
+		const move = e => {
+			const [dX, dY] = [(e.pageX-pageX)*100/width, (e.pageY-pageY)*100/height];
+			const path2 = path.slice(0,i).concat([[X+dX, Y+dY]]).concat(path.slice(i+1));
+			this.setState({path: path2});
+
+		}, stopMove = e => {
+			document.removeEventListener('mousemove', move);
+			document.removeEventListener('mouseup', stopMove);
+			document.body.classList.remove('noselect');
+		};
+		document.addEventListener('mousemove', move);
+		document.addEventListener('mouseup', stopMove);
+		document.body.classList.add('noselect');
+	}
+
+	componentDidUpdate() { // should do it on didMount too
+		const {path} = this.state;
+		this.props.el.style.webkitClipPath =
+		this.props.el.style.shapeOutside = `polygon(${path.map(([x,y])=>`${x}% ${y}%`).join(', ')})`;
+	}
+
+	componentDidMount() {
+		window.addEventListener('resize', this.redraw);
+		this.props.el.onload = this.redraw; // needed just for tests
+		this.redraw();
+	}
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.redraw)
+	}
+
+	render() {
+		const rect = this.props.el.getBoundingClientRect(), // should be cached, this method takes time
+			{left, top, width, height} = rect,
+			{angle, path} = this.state, a = angle*PI/180;
+		const pathpx = path.map(([x,y])=>[x*width/100, y*height/100]);
+		const pathpxrotated = pathpx.map(p=>rotate(p,-a));
+		const {x,y,rx,ry} = boundingbox(pathpxrotated);
+		const [X,Y] = rotate([x,y], a);
+		const [rX, rY] = [rx*abs(cos(a))+ry*abs(sin(a)), ry*abs(cos(a))+rx*abs(sin(a))];
+		const resize = (e, factors) => this.startResize(e, factors, {X,Y,rx,ry});
+		
+		const offset = -round(angle/45),
+			icons = ICONS.slice(offset).concat(ICONS.slice(0,offset));
+
+		// we put a margin around the svg of 14px 
+		return v('svg', {
+				style:{left:left+X-rX-14+scrollX+'px', top:top+Y-rY-14+scrollY+'px', width:2*rX+28+'px', height:2*rY+28+'px'}
+			},
+			v('g', {transform: `translate(${rX+14} ${rY+14}) rotate(${angle})`},
+				v('rect', {className:'frame', x:-rx-7, y:-ry-7, width:2*rx+14, height:2*ry+14, onMouseDown:this.startMove, onDragStart:e=>e.preventDefault()}),
+
+				v('g', {className: 'rotate', onMouseDown:e=>this.startRotate(e, {X,Y})}, 
+					v('line', {x1:12, y1:-ry-7, x2:20, y2:-ry-7}),
+					v('line', {x1:16, y1:-ry-10, x2:20, y2:-ry-7}),
+					v('line', {x1:16, y1:-ry-4, x2:20, y2:-ry-7}),
+					v('line', {x1:-6, y1:-ry-7, x2:-14, y2:-ry-7}),
+					v('line', {x1:-10, y1:-ry-10, x2:-14, y2:-ry-7}),
+					v('line', {x1:-10, y1:-ry-4, x2:-14, y2:-ry-7})
+				),
+
+				v('g', {className:'handles'},
+					
+					v('rect', { style:{cursor:icons[0]}, x:0, y:-ry-10, 		onMouseDown:e=>resize(e,[,-1]) }),
+					v('rect', { style:{cursor:icons[1]}, x:rx+4, y:-ry-10, 	onMouseDown:e=>resize(e,[1,-1]) }),
+					v('rect', { style:{cursor:icons[2]}, x:rx+4, y:0, 			onMouseDown:e=>resize(e,[1]) }),
+					v('rect', { style:{cursor:icons[3]}, x:rx+4, y:ry+4, 		onMouseDown:e=>resize(e,[1,1]) }),
+					v('rect', { style:{cursor:icons[4]}, x:0, y:ry+4, 			onMouseDown:e=>resize(e,[,1]) }),
+					v('rect', { style:{cursor:icons[5]}, x:-rx-10, y:ry+4, 	onMouseDown:e=>resize(e,[-1,1]) }),
+					v('rect', { style:{cursor:icons[6]}, x:-rx-10, y:0, 		onMouseDown:e=>resize(e,[-1]) }),
+					v('rect', { style:{cursor:icons[7]}, x:-rx-10, y:-ry-10, onMouseDown:e=>resize(e,[-1,-1]) })
+				)
+			),
+			
+			v('g', {className:'lines', transform: `translate(${-X+rX+14} ${-Y+rY+14})`},
+				pathpx.map(([x1,y1],i)=>{
+					const [x2,y2] = pathpx[(i+1)%path.length];
+					return v('line', {key:i, x1, y1, x2, y2, onMouseDown:({clientX,clientY,pageX,pageY})=>{
+						const [x,y] = projection([x1,y1], [x2,y2], [clientX-left, clientY-top]); // get the new point
+						this.setState({path: path.slice(0,i+1).concat([[x*100/width,y*100/height]]).concat(path.slice(i+1))}, ()=>this.startEdit({pageX, pageY}, i+1));
+					}})
+				}),
+				pathpx.map(([cx,cy],i)=>v('circle', {key:i, cx, cy, r:3, 
+					onMouseDown:e=>this.startEdit(e, i),
+					onDoubleClick:e=>{
+						if (path.length<=3) return;
+						this.setState({path:path.slice(0,i).concat(path.slice(i+1))})
+					}
+				}))
+			)
+		)
+	}
+}
+
+ReactDOM.render(v(Ellipse, {el: document.querySelector('img')}), circle)
+// ReactDOM.render(v(Ellipse, {el: document.querySelectorAll('img')[1]}), ellipse)
+ReactDOM.render(v(Polygon, {el: document.querySelector('.shape')}), polygon)
+
+</script>
