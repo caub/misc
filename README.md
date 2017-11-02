@@ -30,12 +30,12 @@ Some more or less old code
 
 
 <script>
-const Y1 = 16, D1 = Y1 / 370, D2 = (1296-Y1)/(1296-370);
+const Y1 = 32, D1 = Y1 / 370, D2 = (1296-Y1)/(1296-370);
 const f = x => x >= 370 ? Y1+D2*(x-370) : D1*x;
-const hue = w => Math.floor(360 * Array.from({length: Math.ceil(w.length/2)}, (_,i) => parseInt(w.slice(2*i,2*i+2), 36)).reduce((t,v,i) => t + f(v)*1296**-(i+1), 0));
+const hue = w => Math.floor(360 * w.match(/..?/g).map(s => parseInt(s, 36)).reduce((t,v,i) => t + f(v)*1296**-(i+1), 0));
 
 const tags = [...new Set(Array.from(document.querySelectorAll('span[data-t]'), el => el.dataset.t))];
 custom.textContent += tags.map(tag => `span[data-t="${tag}"]::after {
-	background-color: hsla(${hue(tag)},100%,45%,.9);
+	background-color: hsla(${hue(tag)},100%,45%,.8);
 }`).join('\n');
 </script>
