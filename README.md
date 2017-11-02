@@ -28,10 +28,16 @@ Some code:
 - [Spreadsheet](//caub.github.io/misc/sheet) <span data-t="css-grid"></span>
 - [Streams with fetch](//caub.github.io/misc/stream)
 
-Some projects:
+Other projects:
 - [DOM tagged template](https://github.com/caub/dom-tagged-template)
 - [Todo list](https://github.com/caub/todo-list) <span data-t="react"></span>
 - [Color wheel](https://github.com/caub/color-wheel) <span data-t="react"></span>
+- [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
+
+Some other miscellaneous scripts:
+- [Gists, fiddles](https://gist.github.com/caub/public?direction=desc&sort=updated)
+- [Leetcode](https://discuss.leetcode.com/user/caub)
+- [Blog](http://cauburtin.blogspot.fr)
 
 
 <script>
