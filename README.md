@@ -12,7 +12,7 @@ span[data-t]::after {
 }
 </style>
 
-Some more or less old code
+Some code:
 
 - [Maze](//caub.github.io/misc/maze) <span data-t="AI"></span>
 - [Ruzzle](//caub.github.io/misc/ruzzle) <span data-t="AI"></span>
@@ -28,6 +28,11 @@ Some more or less old code
 - [Spreadsheet](//caub.github.io/misc/sheet) <span data-t="css-grid"></span>
 - [Streams with fetch](//caub.github.io/misc/stream)
 
+Some projects:
+- [DOM tagged template](https://github.com/caub/dom-tagged-template)
+- [Todo list](https://github.com/caub/todo-list) <span data-t="react"></span>
+- [Color wheel](https://github.com/caub/color-wheel) <span data-t="react"></span>
+
 
 <script>
 const Y1 = 32, D1 = Y1 / 370, D2 = (1296-Y1)/(1296-370);
@@ -36,6 +41,6 @@ const hue = w => Math.floor(360 * w.match(/..?/g).map(s => parseInt(s, 36)).redu
 
 const tags = [...new Set(Array.from(document.querySelectorAll('span[data-t]'), el => el.dataset.t))];
 custom.textContent += tags.map(tag => `span[data-t="${tag}"]::after {
-	background-color: hsla(${hue(tag)},100%,45%,.8);
+	background-color: hsla(${hue(tag)},100%,45%,.85);
 }`).join('\n');
 </script>
