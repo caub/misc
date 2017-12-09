@@ -73,7 +73,6 @@
 </form>
 
 <script>
-
 // code heavily inspired from https://domenic.github.io/streams-demo/
 
 const PI_URL = 'http://stuff.mit.edu/afs/sipb/contrib/pi/pi-billion.txt';
@@ -86,6 +85,11 @@ const decoder = new TextDecoder();
 // 	bytesValue = encoder.encode(substring.value);
 // 	bytes.value = Array.prototype.map.call(bytesValue, b => `0x${b.toString(16)}`).join(' ');
 // });
+
+if (location.hash) {
+	substring.value = location.hash.slice(1);
+	submit();
+}
 
 
 async function consume(reader, contentLength) {
