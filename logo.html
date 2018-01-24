@@ -1,0 +1,92 @@
+<html>
+<body>
+<style>
+svg {
+	height: 300px;
+  background: linear-gradient(to bottom right, #cf1913, #ef7013)
+}
+path {
+	fill: white;
+}
+</style>
+<script>
+const intersect = (a, u, b, v) => {
+	const alpha = xprod([b[0]-a[0], b[1]-a[1]], v) / xprod(u, v);
+	// return a + alpha*u
+	return [a[0] + alpha * u[0], a[1] + alpha * u[1]];
+}
+
+const xprod = (u, v) => u[0]*v[1] - u[1]*v[0];
+
+// generate logo in a size*size viewBox
+function genLogo(size = 100, alpha = 60, D = .9, d = 3) {
+
+	//2**.5*r + r + D * r = size * 2**.5/2
+	// r*(D + 1 + 2**.5) = size*2**.5/2
+	const r = size * 2**.5 / (2 * (D + 1 + 2**.5));
+	console.log(r);
+
+	const c1 = [r, size - r]; // center1
+	const c2 = [size - r, r]; // center2
+
+	const p1 = [
+		c1[0] + r * Math.cos((-45 + alpha / 2) * Math.PI/180),
+		c1[1] + r * Math.sin((-45 + alpha / 2) * Math.PI/180)
+	];
+
+	const p2 = [
+		c1[0] + r * Math.cos((-45 - alpha / 2) * Math.PI/180),
+		c1[1] + r * Math.sin((-45 - alpha / 2) * Math.PI/180)
+	];
+
+	const p3 = [
+		c2[0] + r * Math.cos((135 + alpha / 2) * Math.PI/180),
+		c2[1] + r * Math.sin((135 + alpha / 2) * Math.PI/180)
+	];
+
+	const p4 = [
+		c2[0] + r * Math.cos((135 - alpha / 2) * Math.PI/180),
+		c2[1] + r * Math.sin((135 - alpha / 2) * Math.PI/180)
+	];
+
+	const o1 = [
+		size / 2  - d / 2**.5,
+		size / 2  - d / 2**.5
+	];
+
+	const o2 = [
+		size / 2  + d / 2**.5,
+		size / 2  + d / 2**.5
+	];
+
+	const u1 = [
+		Math.cos((-135 + alpha / 2) * Math.PI/180),
+		Math.sin((-135 + alpha / 2) * Math.PI/180)
+	];
+	const u2 = [
+		Math.cos((45 - alpha / 2) * Math.PI/180),
+		Math.sin((45 - alpha / 2) * Math.PI/180)
+	];
+	const u3 = [
+		Math.cos((45 + alpha / 2) * Math.PI/180),
+		Math.sin((45 + alpha / 2) * Math.PI/180)
+	];
+	const u4 = [
+		Math.cos((-135 - alpha / 2) * Math.PI/180),
+		Math.sin((-135 - alpha / 2) * Math.PI/180)
+	];
+
+	const x1 = intersect(p1, u1, o2, [-1,1]);
+	const x2 = intersect(p2, u2, o1, [-1,1]);
+	const x3 = intersect(p3, u3, o1, [1,-1]);
+	const x4 = intersect(p4, u4, o2, [1,-1]);
+  // todo use cubic bezier curves, smoother
+	return `<svg viewBox="-3 -3 ${size+6} ${size+6}">
+	<path d="M${p1}A${r},${r},0,1,1,${p2} Q${x2},${o1} Q${x3},${p3} A${r},${r},0,1,1,${p4} Q${x4},${o2} Q${x1},${p1}" />
+</svg>`;
+}
+
+document.body.innerHTML += genLogo();
+</script>
+</body>
+</html>

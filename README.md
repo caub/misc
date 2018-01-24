@@ -27,6 +27,7 @@ Some code:
 - [Shape-outside](//caub.github.io/misc/shape-outside) <span data-t="css"></span>
 - [Spreadsheet](//caub.github.io/misc/sheet) <span data-t="css-grid"></span>
 - [Streams with fetch](//caub.github.io/misc/stream)
+- [SVG custom logo](//caub.github.io/misc/logo) <span data-t="svg"></span>
 
 Other projects:
 - [DOM tagged template](https://github.com/caub/dom-tagged-template)
