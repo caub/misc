@@ -1,14 +1,5 @@
 <html>
 <body>
-<style>
-svg {
-	height: 300px;
-  background: linear-gradient(to bottom right, #cf1913, #ef7013)
-}
-path {
-	fill: white;
-}
-</style>
 <script>
 const intersect = (a, u, b, v) => {
 	const alpha = xprod([b[0]-a[0], b[1]-a[1]], v) / xprod(u, v);
@@ -17,6 +8,13 @@ const intersect = (a, u, b, v) => {
 }
 
 const xprod = (u, v) => u[0]*v[1] - u[1]*v[0];
+
+const roundValue = v => Math.round(1000 * v) / 1000;
+const roundAny = v => Array.isArray(v) ? v.map(roundValue) :
+			typeof v === 'number' ? roundValue(v) : 
+			v;
+// quick template string to round values
+const round = (s, ...args) => args.reduce((v, arg, i) => v + roundAny(arg) + s[i+1], s[0]);
 
 // generate logo in a size*size viewBox
 function genLogo(size = 100, alpha = 60, D = .9, d = 3) {
@@ -80,9 +78,15 @@ function genLogo(size = 100, alpha = 60, D = .9, d = 3) {
 	const x2 = intersect(p2, u2, o1, [-1,1]);
 	const x3 = intersect(p3, u3, o1, [1,-1]);
 	const x4 = intersect(p4, u4, o2, [1,-1]);
-  // todo use cubic bezier curves, smoother
-	return `<svg viewBox="-3 -3 ${size+6} ${size+6}">
-	<path d="M${p1}A${r},${r},0,1,1,${p2} Q${x2},${o1} Q${x3},${p3} A${r},${r},0,1,1,${p4} Q${x4},${o2} Q${x1},${p1}" />
+  // TODO use cubic bezier curves, smoother
+	return round`<svg viewBox="-3 -3 ${size+6} ${size+6}" height="300">
+		<defs>
+    <linearGradient id="g-red-org" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cf1913"/>
+      <stop offset="100%" stop-color="#ef7013"/>
+    </linearGradient>
+   </defs>
+	<path fill="url(#g-red-org)" d="M${p1}A${r},${r},0,1,1,${p2} Q${x2},${o1} Q${x3},${p3} A${r},${r},0,1,1,${p4} Q${x4},${o2} Q${x1},${p1}" />
 </svg>`;
 }
 
