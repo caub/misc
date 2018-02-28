@@ -5,7 +5,7 @@ body {
 span[data-t]::after {
 	content: attr(data-t);
 	font-size: 80%;
-	padding: 0px 2px;
+	padding: 2px;
 	color: white;
 	background-color: #888;
 	font-weight: 600;
