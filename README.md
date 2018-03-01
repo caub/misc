@@ -37,7 +37,7 @@ Other projects:
 
 Some other miscellaneous scripts:
 - [Gists, fiddles](https://gist.github.com/caub/public?direction=desc&sort=updated)
-- [Leetcode](https://discuss.leetcode.com/user/caub)
+- [Leetcode](https://discuss.leetcode.com/user/caub) ([median-of-sorted-arrays](https://leetcode.com/problems/median-of-two-sorted-arrays/discuss/2504/Median-of-2-sorted-arrays-in-JS))
 - [Blog](http://cauburtin.blogspot.fr)
 
 
