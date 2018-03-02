@@ -12,7 +12,7 @@ span[data-t]::after {
 }
 </style>
 
-Some code:
+### Some code:
 
 - [Maze](//caub.github.io/misc/maze) <span data-t="AI"></span>
 - [Ruzzle](//caub.github.io/misc/ruzzle) <span data-t="AI"></span>
@@ -29,13 +29,13 @@ Some code:
 - [Streams with fetch](//caub.github.io/misc/stream)
 - [SVG custom logo](//caub.github.io/misc/logo) <span data-t="svg"></span>
 
-Other projects:
+### Other projects:
 - [DOM tagged template](https://github.com/caub/dom-tagged-template)
 - [Todo list](https://github.com/caub/todo-list) <span data-t="react"></span>
 - [Color wheel](https://github.com/caub/color-wheel) <span data-t="react"></span>
 - [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
 
-Some other miscellaneous scripts:
+### Some other miscellaneous scripts:
 - [Gists, fiddles](https://gist.github.com/caub/public?direction=desc&sort=updated)
 - [Leetcode](https://discuss.leetcode.com/user/caub) ([median-of-sorted-arrays](https://leetcode.com/problems/median-of-two-sorted-arrays/discuss/2504/Median-of-2-sorted-arrays-in-JS))
 - [Blog](http://cauburtin.blogspot.fr)
