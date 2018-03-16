@@ -36,8 +36,10 @@ span[data-t]::after {
 - [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
 
 ### Some other miscellaneous scripts:
-- [Gists, fiddles](https://gist.github.com/caub/public?direction=desc&sort=updated)
+- [Gists](https://gist.github.com/caub/public?direction=desc&sort=updated)
 - [Leetcode](https://discuss.leetcode.com/user/caub) ([median-of-sorted-arrays](https://leetcode.com/problems/median-of-two-sorted-arrays/discuss/2504/Median-of-2-sorted-arrays-in-JS))
+- [Repl](https://repl.it/@caub)
+- [Runkit](https://runkit.com/caub)
 - [Blog](http://cauburtin.blogspot.fr)
 
 
