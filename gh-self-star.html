@@ -1,0 +1,133 @@
+<h1>Measure self-starring ratio of Github users</h1>
+<style>
+body {
+	font-family: arial;
+}
+h1 {
+	text-align: center;
+	margin-top: 3em;
+	margin-bottom: 2em;
+}
+input {
+	font-size: 1.5em;
+	margin: .5em auto;
+}
+input[type=submit] {
+	background: transparent;
+	border: 1px solid gray;
+	font-feature-settings: 'liga' 1;
+	padding: 5px 10px;
+}
+form {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+pre {
+	max-width: 400px;
+	margin: 1em auto;
+}
+</style>
+<form>
+	<input name="login" placeholder="Github login, ex: mdo">
+	<input name="token" placeholder="Github API token">
+	<input type="submit" value="🔍">
+</form>
+
+<pre id="output">
+	
+</pre>
+
+<script>
+/*
+create token: https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql
+*/
+const form = document.forms[0];
+
+if (localStorage.ghToken) {
+	form.token.value = localStorage.ghToken;
+}
+
+form.onsubmit = async e => {
+	e.preventDefault();
+	const login = form.login.value || 'mdo';
+	const token = form.token.value || localStorage.ghToken;
+	try {
+		const user = await getUser({login, token});
+		const totalStars = user.starredRepositories.totalCount;
+		const orgs = new Set(user.organizations.edges.map(o => o.node.login));
+		let reps;
+		let cursor;
+		let i = 0;
+		let count = 0;
+		while (i++ < 100) {
+			reps = await getStars({login, token, after: cursor});
+			console.log(reps.length);
+			count += reps.filter(({node: {owner}}) => owner.login === login || orgs.has(owner.login)).length;
+			cursor = reps[reps.length - 1] && reps[reps.length - 1].cursor;
+			if (reps.length < 100) {
+				break;
+			}
+		}
+		console.log(count);
+		output.innerHTML = `
+	<strong>${login}</strong>'s self-starring factor: ${count} / ${totalStars} = ${(count / totalStars).toFixed(2)}
+`;
+		localStorage.ghToken = token;
+	} catch(err) {
+		output.innerHTML = `<a href="https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql">${err && err.message || 'Check your GH token validity'}</a>`
+	}
+};
+const getUser = ({login, token}) => fetch('https://api.github.com/graphql', {
+	method: 'POST',
+	headers: {
+		Authorization: `bearer ${token}`
+	},
+	body: JSON.stringify({
+		query: `query { 
+  user(login: "${login}") { 
+    organizations(first: 100) {
+      edges {
+        node {
+        	login
+        }
+      }
+    }
+    starredRepositories {
+      totalCount
+    }
+  }
+}`
+	})
+})
+	.then(r => r.json())
+	.then(d => {
+		if (!d.data && d.message) {
+			throw new Error(d.message);
+		}
+		return d.data.user;
+	});
+const getStars = ({login, token, after, first = 100}) => fetch('https://api.github.com/graphql', {
+	method: 'POST',
+	headers: {
+		Authorization: `bearer ${token}`
+	},
+	body: JSON.stringify({
+		query: `query { 
+  user(login: "${login}") { 
+    starredRepositories(first: ${first}${after ? `, after:"${after}"` : ''}) {
+      totalCount
+      edges {
+        cursor
+        node {
+          id
+        	owner {login}
+        }
+      }
+    }
+  }
+}`
+	})
+}).then(r => r.json()).then(d => d.data.user.starredRepositories.edges);
+</script>

@@ -20,6 +20,7 @@ span[data-t]::after {
 - [Calculator](//caub.github.io/misc/calculator) <span data-t="parser"></span>
 - [Chrome vs Firefox versions](//caub.github.io/misc/chrome-firefox-versions) <span data-t="c3js"></span> <span data-t="chartjs"></span>
 - [Connect-four](//caub.github.io/misc/connect-four) <span data-t="AI"></span>
+- [Github self starring ratio](//caub.github.io/misc/gh-self-star) <span data-t="GH"></span> <span data-t="graphql"></span>
 - [Infinite clock](//caub.github.io/misc/infinite-clock)
 - [Minimax](//caub.github.io/misc/minimax) <span data-t="AI"></span>
 - [Optimize jpeg/png in browser](//caub.github.io/misc/optim) <span data-t="emscripten"></span>
@@ -38,7 +39,7 @@ span[data-t]::after {
 ### Some other miscellaneous scripts:
 - [Gists](https://gist.github.com/caub/public?direction=desc&sort=updated)
 - [Leetcode](https://discuss.leetcode.com/user/caub) ([median-of-sorted-arrays](https://leetcode.com/problems/median-of-two-sorted-arrays/discuss/2504/Median-of-2-sorted-arrays-in-JS))
-- [Repl](https://repl.it/@caub)
+- [Repl.it](https://repl.it/@caub)
 - [Runkit](https://runkit.com/caub)
 - [Blog](http://cauburtin.blogspot.fr)
 
