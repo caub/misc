@@ -30,8 +30,8 @@ pre {
 }
 </style>
 <form>
-	<input name="login" placeholder="Github login, ex: mdo">
-	<input name="token" placeholder="Github API token">
+	<input name="login" placeholder="Github login, ex: mdo" required>
+	<input name="token" placeholder="Github API token" required>
 	<input type="submit" value="🔍">
 </form>
 
@@ -52,9 +52,9 @@ if (localStorage.ghToken) {
 form.onsubmit = async e => {
 	e.preventDefault();
 	const login = form.login.value || 'mdo';
-	const token = form.token.value || localStorage.ghToken;
+	localStorage.ghToken = form.token.value;
 	try {
-		const user = await getUser({login, token});
+		const user = await getUser({login});
 		const totalStars = user.starredRepositories.totalCount;
 		const orgs = new Set(user.organizations.edges.map(o => o.node.login));
 		let reps;
@@ -62,7 +62,7 @@ form.onsubmit = async e => {
 		let i = 0;
 		let count = 0;
 		while (i++ < 100) {
-			reps = await getStars({login, token, after: cursor});
+			reps = await getStars({login, after: cursor});
 			console.log(reps.length);
 			count += reps.filter(({node: {owner}}) => owner.login === login || orgs.has(owner.login)).length;
 			cursor = reps[reps.length - 1] && reps[reps.length - 1].cursor;
@@ -74,18 +74,12 @@ form.onsubmit = async e => {
 		output.innerHTML = `
 	<strong>${login}</strong>'s self-starring factor: ${count} / ${totalStars} = ${(count / totalStars).toFixed(2)}
 `;
-		localStorage.ghToken = token;
 	} catch(err) {
-		output.innerHTML = `<a href="https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql">${err && err.message || 'Check your GH token validity'}</a>`
+		output.innerHTML = `<a href="https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql">${err && err.message || 'Create a GH token!'}</a>`
 	}
 };
-const getUser = ({login, token}) => fetch('https://api.github.com/graphql', {
-	method: 'POST',
-	headers: {
-		Authorization: `bearer ${token}`
-	},
-	body: JSON.stringify({
-		query: `query { 
+const getUser = ({login}) => gql({
+	query: `query { 
   user(login: "${login}") { 
     organizations(first: 100) {
       edges {
@@ -100,21 +94,10 @@ const getUser = ({login, token}) => fetch('https://api.github.com/graphql', {
   }
 }`
 	})
-})
-	.then(r => r.json())
-	.then(d => {
-		if (!d.data && d.message) {
-			throw new Error(d.message);
-		}
-		return d.data.user;
-	});
-const getStars = ({login, token, after, first = 100}) => fetch('https://api.github.com/graphql', {
-	method: 'POST',
-	headers: {
-		Authorization: `bearer ${token}`
-	},
-	body: JSON.stringify({
-		query: `query { 
+	.then(d => d.user);
+
+const getStars = ({login, after, first = 100}) => gql({
+	query: `query { 
   user(login: "${login}") { 
     starredRepositories(first: ${first}${after ? `, after:"${after}"` : ''}) {
       totalCount
@@ -129,5 +112,23 @@ const getStars = ({login, token, after, first = 100}) => fetch('https://api.gith
   }
 }`
 	})
-}).then(r => r.json()).then(d => d.data.user.starredRepositories.edges);
+	.then(d => d.user.starredRepositories.edges);
+
+const gql = ({query, variables}) => fetch('https://api.github.com/graphql', {
+	method: 'POST',
+	headers: {
+		Authorization: `bearer ${localStorage.ghToken}`
+	},
+	body: JSON.stringify({
+		query,
+		variables
+	})
+})
+	.then(async r => {
+		if (!r.ok) {
+			const d = await r.json();
+			throw new Error(d.message);
+		}
+		return r.json().then(d => d.data);
+	});
 </script>
