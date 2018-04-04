@@ -79,8 +79,8 @@ form.onsubmit = async e => {
 	}
 };
 const getUser = ({login}) => gql({
-	query: `query { 
-  user(login: "${login}") { 
+	query: `query user($login: String!) { 
+  user(login: $login) { 
     organizations(first: 100) {
       edges {
         node {
@@ -92,14 +92,17 @@ const getUser = ({login}) => gql({
       totalCount
     }
   }
-}`
-	})
+}`,
+	variables: {
+		login
+	}
+})
 	.then(d => d.user);
 
 const getStars = ({login, after, first = 100}) => gql({
-	query: `query { 
-  user(login: "${login}") { 
-    starredRepositories(first: ${first}${after ? `, after:"${after}"` : ''}) {
+	query: `query userStars($login: String!, $first: Int, $after: String) { 
+  user(login: $login) { 
+    starredRepositories(first: $first, after: $after) {
       totalCount
       edges {
         cursor
@@ -110,8 +113,11 @@ const getStars = ({login, after, first = 100}) => gql({
       }
     }
   }
-}`
-	})
+}`,
+	variables: {
+		login, first, after
+	}
+})
 	.then(d => d.user.starredRepositories.edges);
 
 const gql = ({query, variables}) => fetch('https://api.github.com/graphql', {
