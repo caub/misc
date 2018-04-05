@@ -24,30 +24,32 @@ form {
 	flex-direction: column;
 	align-items: center;
 }
-pre {
+#output {
 	max-width: 800px;
 	margin: 1em auto;
-	white-space: pre-wrap;
 }
-pre a {
-	font-size: 120%;
+nav {
+	display: flex;
+	flex-direction: column;
+	padding-left: 2em;
 }
 </style>
 <form>
-	<input name="login" placeholder="Github login, ex: mdo">
-	<input name="token" placeholder="Github API token">
+	<input name="login" placeholder="Github login, ex: mdo" required>
+	<input name="token" placeholder="Github API token" required>
 	<input type="submit" value="🔍">
 </form>
 
-<pre id="output">
+<div id="output">
 	
-</pre>
+</div>
 
 <script>
 /*
 create token: https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql
 */
 const link = url => `<a href="${url}">${url}</a>`;
+const getAuthor = target => target.committedViaWeb ? target.author : target.committer;
 
 const form = document.forms[0];
 
@@ -83,7 +85,7 @@ form.onsubmit = async e => {
 					refs.push(...await getAllRefs({owner: login, name: fork.name, after: fork.refs.pageInfo.endCursor}));
 				}
 				// console.log(fork.name, refs.length);
-				const myBranches = fork.refs.nodes.filter(ref => ref.target.author.email === user.email);
+				const myBranches = fork.refs.nodes.filter(ref => getAuthor(ref.target).email === user.email);
 				let lvl = 0;
 				let branch; // one of the branch you didn't PR to check
 				myBranches.forEach(br => {
@@ -103,14 +105,22 @@ form.onsubmit = async e => {
 
 		const rems = removables.reduce((m, {lvl, ...rest}) => m.set(lvl, [...m.get(lvl)||[], rest]), new Map());
 		output.innerHTML = `
-- 0: no branch from you -> safely removable
-${rems.get(0).map(({name}) => `    - ${link(`https://github.com/${login}/${name}`)}`).join('\n')}
-- 1: at most a branch with a CLOSED/MERGED PR -> quite safe, but you may want to check the closed ones
-${rems.get(1).map(({name, parent}) => `    - ${link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)}`).join('\n')}
-- 2: a branch with no PR -> could be removed, but check this branch first
-${rems.get(2).map(({name, branch}) => `    - ${link(`https://github.com/${login}/${name}/tree/${branch}`)}`).join('\n')}
-- 3: an OPEN PR -> don't remove, or check it if you want to close it (if old)
-${rems.get(3).map(({name, parent}) => `    - ${link(`https://github.com/${parent}/pulls/${login}`)}`).join('\n')}
+<p>0: no branch from you -> safely removable</p>
+<nav>
+	${rems.get(0).map(({name}) => link(`https://github.com/${login}/${name}`)).join('')}
+</nav>
+<p>1: at most a branch with a CLOSED/MERGED PR -> quite safe, but you may want to check the closed ones</p>
+<nav>
+	${rems.get(1).map(({name, parent}) => link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)).join('')}
+</nav>
+<p>2: a branch with no PR -> could be removed, but check this branch first</p>
+<nav>
+	${rems.get(2).map(({name, branch}) => link(`https://github.com/${login}/${name}/tree/${branch}`)).join('')}
+</nav>
+<p>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</p>
+<nav>
+	${rems.get(3).map(({name, parent}) => link(`https://github.com/${parent}/pulls/${login}`)).join('')}
+</nav>
 `;
 	} catch(err) {
 		output.innerHTML = `<a href="https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql">${err && err.message || 'Create a GH token!'}</a>`
@@ -142,8 +152,10 @@ const refsFragment =
 `nodes {
 	name
 	target {
-		... on Commit { 
+		... on Commit {
 			author {email}
+			committer{email}
+			committedViaWeb
 		}
 		oid
 	}
