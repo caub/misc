@@ -56,21 +56,20 @@ form.onsubmit = async e => {
 	try {
 		const user = await getUser({login});
 		const totalStars = user.starredRepositories.totalCount;
-		const orgs = new Set(user.organizations.edges.map(o => o.node.login));
+		const orgs = new Set(user.organizations.nodes.map(o => o.login));
 		let reps;
 		let cursor;
-		let i = 0;
 		let count = 0;
-		while (i++ < 100) {
+		for (let i=0; i < 100; i++) {
 			reps = await getStars({login, after: cursor});
-			console.log(reps.length);
-			count += reps.filter(({node: {owner}}) => owner.login === login || orgs.has(owner.login)).length;
-			cursor = reps[reps.length - 1] && reps[reps.length - 1].cursor;
-			if (reps.length < 100) {
+			console.log(reps.nodes.length);
+			count += reps.nodes.filter(({owner}) => owner.login === login || orgs.has(owner.login)).length;
+			cursor = reps.pageInfo.endCursor;
+			if (!reps.pageInfo.hasNextPage) {
 				break;
 			}
 		}
-		console.log(count);
+		console.log(count, totalStars);
 		output.innerHTML = `
 	<strong>${login}</strong>'s self-starring factor: ${count} / ${totalStars} = ${(count / totalStars).toFixed(2)}
 `;
@@ -80,18 +79,16 @@ form.onsubmit = async e => {
 };
 const getUser = ({login}) => gql({
 	query: `query user($login: String!) { 
-  user(login: $login) { 
-    organizations(first: 100) {
-      edges {
-        node {
-        	login
-        }
-      }
-    }
-    starredRepositories {
-      totalCount
-    }
-  }
+	user(login: $login) { 
+		organizations(first: 100) {
+			nodes {
+				login
+			}
+		}
+		starredRepositories {
+			totalCount
+		}
+	}
 }`,
 	variables: {
 		login
@@ -101,24 +98,24 @@ const getUser = ({login}) => gql({
 
 const getStars = ({login, after, first = 100}) => gql({
 	query: `query userStars($login: String!, $first: Int, $after: String) { 
-  user(login: $login) { 
-    starredRepositories(first: $first, after: $after) {
-      totalCount
-      edges {
-        cursor
-        node {
-          id
-        	owner {login}
-        }
-      }
-    }
-  }
+	user(login: $login) { 
+		starredRepositories(first: $first, after: $after) {
+			nodes {
+				id
+				owner {login}
+			}
+			pageInfo {
+				endCursor
+				hasNextPage
+			}
+		}
+	}
 }`,
 	variables: {
 		login, first, after
 	}
 })
-	.then(d => d.user.starredRepositories.edges);
+	.then(d => d.user.starredRepositories);
 
 const gql = ({query, variables}) => fetch('https://api.github.com/graphql', {
 	method: 'POST',
