@@ -1,4 +1,4 @@
-<h1>Measure self-starring ratio of Github users</h1>
+<h1>Measure self-starring <span title="percentage of your starred repos are also your repos" class="infos">ratio</span> of Github users</h1>
 <style>
 body {
 	font-family: arial;
@@ -7,6 +7,9 @@ h1 {
 	text-align: center;
 	margin-top: 3em;
 	margin-bottom: 2em;
+}
+.infos {
+	border-bottom: lightblue dashed;
 }
 input {
 	font-size: 1.5em;
@@ -51,7 +54,7 @@ if (localStorage.ghToken) {
 
 form.onsubmit = async e => {
 	e.preventDefault();
-	const login = form.login.value || 'mdo';
+	const login = form.login.value;
 	localStorage.ghToken = form.token.value;
 	try {
 		const user = await getUser({login});
