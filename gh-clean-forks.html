@@ -109,29 +109,29 @@ form.onsubmit = async e => {
 			}
 		}
 
-		const rems = removables.reduce((m, {lvl, ...rest}) => m.set(lvl, [...m.get(lvl)||[], rest]), new Map());
+		const rems = removables.reduce((m, {lvl, ...rest}) => m.set(lvl, [...m.get(lvl), rest]), new Map([[0,[]],[1,[]],[2,[]],[3,[]]]));
 		output.innerHTML = `
 <p>0: no branch from you -> safely removable</p>
 <ul>
-	${rems.get(0).map(({id, name}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}`)}<a></a></li>`).join('')}
+	${rems.get(0).map(({id, name}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}`)}<a title="remove"></a></li>`).join('')}
 </ul>
 <p>1: at most a branch with a CLOSED/MERGED PR -> quite safe, but you may want to check the closed ones</p>
 <ul>
-	${rems.get(1).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)}<a></a></li>`).join('')}
+	${rems.get(1).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)}<a title="remove"></a></li>`).join('')}
 </ul>
 <p>2: a branch with no PR -> could be removed, but check this branch first</p>
 <ul>
-	${rems.get(2).map(({id, name, branch}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}/tree/${branch}`)}<a></a></li>`).join('')}
+	${rems.get(2).map(({id, name, branch}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}/tree/${branch}`)}<a title="remove"></a></li>`).join('')}
 </ul>
 <p>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</p>
 <ul>
-	${rems.get(3).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}`)}<a></a></li>`).join('')}
+	${rems.get(3).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove"></a></li>`).join('')}
 </ul>
 `;
 
 		output.onclick = e => {
 			const el = e.target;
-			if (el.tagName !== 'A') return;
+			if (el.tagName !== 'A' || el.href) return;
 			const li = el.closest('li');
 			if (!li) return;
 			if (!window.confirm(`delete ${li.dataset.name} fork?`)) return;
