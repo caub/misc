@@ -55,6 +55,11 @@ create token: https://developer.github.com/v4/guides/forming-calls/#authenticati
 */
 const link = (href, text=href) => `<a href="${href}">${text}</a>`;
 const getAuthor = target => target.committedViaWeb ? target.author : target.committer;
+const branchLevel = ({associatedPullRequests: {nodes: prs}}) => {
+	if (!prs || !prs.length) return 2;
+	if (prs.some(pr => pr.state === 'OPEN')) return 3;
+	return 1;
+};
 
 const form = document.forms[0];
 
@@ -92,15 +97,17 @@ form.onsubmit = async e => {
 				}
 				// console.log(fork.name, refs.length);
 				const myBranches = fork.refs.nodes.filter(ref => getAuthor(ref.target).email === user.email);
-				let lvl = 0;
-				let branch; // one of the branch you didn't PR to check
-				myBranches.forEach(br => {
-					const prs = br.associatedPullRequests.nodes;
-					if (!prs.length) { lvl = Math.max(lvl, 2); branch = br.name; }
-					else if (prs.some(pr => pr.state === 'OPEN')) lvl = Math.max(lvl, 3);
-					else lvl = Math.max(lvl, 1);
-				});
-				removables.push({id: fork.id, name: fork.name, parent: fork.parent.nameWithOwner, lvl, ...lvl === 2 && {branch}}) // https://github.com/gitterHQ/gitter-demo-app/pulls/caub
+
+				const lvl = Math.max(0, ...myBranches.map(branchLevel));
+
+				const removable = {id: fork.id, name: fork.name, parent: fork.parent.nameWithOwner, lvl};
+
+				if (lvl === 2) {
+					const branches = myBranches.filter(br => !br.associatedPullRequests.nodes.length);
+					removable.name = branches.length ? branches[0].repository.nameWithOwner : fork.name;
+					removable.branches = branches.length ? branches.map(br => br.name) : ['master'];
+				}
+				removables.push(removable);
 			}
 		
 			cursor = user.repositories.pageInfo.endCursor;
@@ -121,7 +128,7 @@ form.onsubmit = async e => {
 </ul>
 <p>2: a branch with no PR -> could be removed, but check this branch first</p>
 <ul>
-	${rems.get(2).map(({id, name, branch}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}/tree/${branch}`)}<a title="remove"></a></li>`).join('')}
+	${rems.get(2).map(({id, name, branches}) => `<li data-id="${id}" data-name="${name}" title="${branches.length > 1 ? 'also: ' + branches.slice(1) : ''}">${link(`https://github.com/${name}/tree/${branches[0]}`)}<a title="remove"></a></li>`).join('')}
 </ul>
 <p>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</p>
 <ul>
@@ -168,6 +175,7 @@ const getAllRefs = async ({owner, name, after: intialAfter}) => {
 const refsFragment = 
 `nodes {
 	name
+	repository {nameWithOwner}
 	target {
 		... on Commit {
 			author {email}
