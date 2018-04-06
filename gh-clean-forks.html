@@ -38,6 +38,9 @@ li a:not([href])::after {
 	content: "❌️";
 	cursor: pointer;
 }
+summary {
+	cursor: default;
+}
 </style>
 <form>
 	<input name="login" placeholder="Github login, ex: mdo" required>
@@ -118,23 +121,34 @@ form.onsubmit = async e => {
 
 		const rems = removables.reduce((m, {lvl, ...rest}) => m.set(lvl, [...m.get(lvl), rest]), new Map([[0,[]],[1,[]],[2,[]],[3,[]]]));
 		output.innerHTML = `
-<p>0: no branch from you -> safely removable</p>
+<details open>
+<summary>0: no branch from you -> safely removable</summary>
 <ul>
 	${rems.get(0).map(({id, name}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}`)}<a title="remove"></a></li>`).join('')}
 </ul>
-<p>1: at most a branch with a CLOSED/MERGED PR -> quite safe, but you may want to check the closed ones</p>
+</details>
+
+<details open>
+<summary>1: at most a branch with a CLOSED/MERGED PR -> quite safe, but you may want to check the closed ones</summary>
 <ul>
 	${rems.get(1).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)}<a title="remove"></a></li>`).join('')}
 </ul>
-<p>2: a branch with no PR -> could be removed, but check this branch first</p>
+</details>
+
+<details open>
+<summary>2: a branch with no PR -> could be removed, but check this branch first</summary>
 <ul>
 	${rems.get(2).map(({id, name, branches}) => `<li data-id="${id}" data-name="${name}" title="${branches.length > 1 ? 'also: ' + branches.slice(1) : ''}">${link(`https://github.com/${name}/tree/${branches[0]}`)}<a title="remove"></a></li>`).join('')}
 </ul>
-<p>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</p>
+</details>
+
+
+<details open>
+<summary>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</summary>
 <ul>
 	${rems.get(3).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove"></a></li>`).join('')}
 </ul>
-`;
+</details>`;
 
 		output.onclick = e => {
 			const el = e.target;
