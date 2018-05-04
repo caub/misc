@@ -273,6 +273,7 @@ const gql = ({query, variables}) => fetch('https://api.github.com/graphql', {
 			const d = await r.json();
 			throw new Error(d.message);
 		}
+		if (r.status === 204) return;
 		return r.json().then(d => d.data);
 	});
 </script>
