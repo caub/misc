@@ -31,6 +31,9 @@ form {
 ul {
 	list-style: none;
 }
+li {
+	line-height: 1.2em;
+}
 li a {
 	margin: auto 6px;
 }
@@ -40,6 +43,23 @@ li a:not([href])::after {
 }
 summary {
 	cursor: default;
+}
+nav {
+	display: inline-flex;
+	flex-wrap: wrap;
+	margin-left: 1em;
+}
+nav::before {
+	content: "(";
+	color: rgba(0,0,0,.6);
+}
+nav::after {
+	content: ")";
+	color: rgba(0,0,0,.6);
+}
+nav a {
+	white-space: nowrap;
+	margin: auto 2px;
 }
 </style>
 <form>
@@ -140,9 +160,9 @@ form.onsubmit = async e => {
 </details>
 
 <details open>
-<summary>2: a branch with no PR -> could be removed, but check this branch first</summary>
+<summary>2: a branch with no PR -> could be removed, but check those branches first</summary>
 <ul>
-	${rems.get(2).map(({id, nameWithOwner, branches}) => branches.map(br => `<li data-id="${id}" data-name="${nameWithOwner}">${link(`https://github.com/${nameWithOwner}/tree/${br.name}`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')).join('')}
+	${rems.get(2).map(({id, nameWithOwner, branches}) => `<li data-id="${id}" data-name="${nameWithOwner}">${link(`https://github.com/${nameWithOwner}`)}<a title="remove ${nameWithOwner}"></a><nav>${branches.map(br => link(`https://github.com/${nameWithOwner}/tree/${br.name}`, br.name)).join('')}</nav></li>`).join('')}
 </ul>
 </details>
 
@@ -150,7 +170,7 @@ form.onsubmit = async e => {
 <details open>
 <summary>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</summary>
 <ul>
-	${rems.get(3).map(({id, nameWithOwner, parent, branches}) => `<li data-id="${id}" data-name="${nameWithOwner}" title="${branches.length > 1 ? branches.map(x => x.createdAt) : ''}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')}
+	${rems.get(3).map(({id, nameWithOwner, parent, branches}) => `<li data-id="${id}" data-name="${nameWithOwner}" title="Most recent PR: ${branches[0]&&branches[0].prs[0]&&branches[0].prs[0].createdAt.slice(0,10)}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')}
 </ul>
 </details>`;
 
