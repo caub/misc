@@ -58,7 +58,7 @@ create token: https://developer.github.com/v4/guides/forming-calls/#authenticati
 */
 const link = (href, text=href) => `<a href="${href}">${text}</a>`;
 const getAuthor = target => target.committedViaWeb ? target.author : target.committer;
-const branchLevel = ({associatedPullRequests: {nodes: prs}}) => {
+const branchLevel = ({prs}) => {
 	if (!prs || !prs.length) return 2;
 	if (prs.some(pr => pr.state === 'OPEN')) return 3;
 	return 1;
@@ -99,16 +99,23 @@ form.onsubmit = async e => {
 					refs.push(...await getAllRefs({owner: login, name: fork.name, after: fork.refs.pageInfo.endCursor}));
 				}
 				// console.log(fork.name, refs.length);
-				const myBranches = fork.refs.nodes.filter(ref => getAuthor(ref.target).email === user.email);
+				const myBranches = fork.refs.nodes
+					.filter(ref => getAuthor(ref.target).email === user.email)
+					.map(({name, repository, target, associatedPullRequests: {nodes: prs}}) => ({name, repository, target, prs}))
+					.sort((a,b) => a.prs.length && b.prs.length ? a.prs[0].createdAt - b.prs[0].createdAt : a.prs.length ? -1 : 1);
 
 				const lvl = Math.max(0, ...myBranches.map(branchLevel));
 
-				const removable = {id: fork.id, name: fork.name, parent: fork.parent.nameWithOwner, lvl};
-
-				if (lvl === 2) {
-					const branches = myBranches.filter(br => !br.associatedPullRequests.nodes.length);
-					removable.name = branches.length ? branches[0].repository.nameWithOwner : fork.name;
-					removable.branches = branches.length ? branches.map(br => br.name) : ['master'];
+				const removable = {
+					id: fork.id,
+					name: fork.name,
+					parent: fork.parent.nameWithOwner,
+					lvl,
+					branches: myBranches
+				};
+				// debug
+				if (myBranches.length && myBranches[0].repository.nameWithOwner !== (login+'/'+fork.name)) {
+					console.log('___', login+'/'+fork.name, '!=', myBranches[0].repository.nameWithOwner);
 				}
 				removables.push(removable);
 			}
@@ -138,7 +145,7 @@ form.onsubmit = async e => {
 <details open>
 <summary>2: a branch with no PR -> could be removed, but check this branch first</summary>
 <ul>
-	${rems.get(2).map(({id, name, branches}) => `<li data-id="${id}" data-name="${name}" title="${branches.length > 1 ? 'also: ' + branches.slice(1) : ''}">${link(`https://github.com/${name}/tree/${branches[0]}`)}<a title="remove"></a></li>`).join('')}
+	${rems.get(2).map(({id, name, branches}) => branches.map(br => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${name}/tree/${br.name}`)}<a title="remove"></a></li>`).join('')).join('')}
 </ul>
 </details>
 
@@ -146,7 +153,7 @@ form.onsubmit = async e => {
 <details open>
 <summary>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</summary>
 <ul>
-	${rems.get(3).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove"></a></li>`).join('')}
+	${rems.get(3).map(({id, name, parent, branches}) => `<li data-id="${id}" data-name="${name}" title="${branches.length > 1 ? branches.map(x => x.createdAt) : ''}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove"></a></li>`).join('')}
 </ul>
 </details>`;
 
