@@ -101,7 +101,7 @@ form.onsubmit = async e => {
 				// console.log(fork.name, refs.length);
 				const myBranches = fork.refs.nodes
 					.filter(ref => getAuthor(ref.target).email === user.email)
-					.map(({name, repository, target, associatedPullRequests: {nodes: prs}}) => ({name, repository, target, prs}))
+					.map(({name, target, associatedPullRequests: {nodes: prs}}) => ({name, target, prs}))
 					.sort((a,b) => a.prs.length && b.prs.length ? a.prs[0].createdAt - b.prs[0].createdAt : a.prs.length ? -1 : 1);
 
 				const lvl = Math.max(0, ...myBranches.map(branchLevel));
@@ -109,14 +109,11 @@ form.onsubmit = async e => {
 				const removable = {
 					id: fork.id,
 					name: fork.name,
+					nameWithOwner: fork.nameWithOwner,
 					parent: fork.parent.nameWithOwner,
 					lvl,
 					branches: myBranches
 				};
-				// debug
-				if (myBranches.length && myBranches[0].repository.nameWithOwner !== (login+'/'+fork.name)) {
-					console.log('___', login+'/'+fork.name, '!=', myBranches[0].repository.nameWithOwner);
-				}
 				removables.push(removable);
 			}
 		
@@ -131,21 +128,21 @@ form.onsubmit = async e => {
 <details open>
 <summary>0: no branch from you -> safely removable</summary>
 <ul>
-	${rems.get(0).map(({id, name}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${login}/${name}`)}<a title="remove"></a></li>`).join('')}
+	${rems.get(0).map(({id, nameWithOwner}) => `<li data-id="${id}" data-name="${nameWithOwner}">${link(`https://github.com/${nameWithOwner}`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')}
 </ul>
 </details>
 
 <details open>
 <summary>1: at most a branch with a CLOSED/MERGED PR -> quite safe, but you may want to check the closed ones</summary>
 <ul>
-	${rems.get(1).map(({id, name, parent}) => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)}<a title="remove"></a></li>`).join('')}
+	${rems.get(1).map(({id, nameWithOwner, parent}) => `<li data-id="${id}" data-name="${nameWithOwner}">${link(`https://github.com/${parent}/pulls/${login}?q=is:closed`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')}
 </ul>
 </details>
 
 <details open>
 <summary>2: a branch with no PR -> could be removed, but check this branch first</summary>
 <ul>
-	${rems.get(2).map(({id, name, branches}) => branches.map(br => `<li data-id="${id}" data-name="${name}">${link(`https://github.com/${name}/tree/${br.name}`)}<a title="remove"></a></li>`).join('')).join('')}
+	${rems.get(2).map(({id, nameWithOwner, branches}) => branches.map(br => `<li data-id="${id}" data-name="${nameWithOwner}">${link(`https://github.com/${nameWithOwner}/tree/${br.name}`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')).join('')}
 </ul>
 </details>
 
@@ -153,7 +150,7 @@ form.onsubmit = async e => {
 <details open>
 <summary>3: an OPEN PR -> don't remove, or check it if you want to close it (if old)</summary>
 <ul>
-	${rems.get(3).map(({id, name, parent, branches}) => `<li data-id="${id}" data-name="${name}" title="${branches.length > 1 ? branches.map(x => x.createdAt) : ''}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove"></a></li>`).join('')}
+	${rems.get(3).map(({id, nameWithOwner, parent, branches}) => `<li data-id="${id}" data-name="${nameWithOwner}" title="${branches.length > 1 ? branches.map(x => x.createdAt) : ''}">${link(`https://github.com/${parent}/pulls/${login}`)}<a title="remove ${nameWithOwner}"></a></li>`).join('')}
 </ul>
 </details>`;
 
@@ -196,7 +193,6 @@ const getAllRefs = async ({owner, name, after: intialAfter}) => {
 const refsFragment = 
 `nodes {
 	name
-	repository {nameWithOwner}
 	target {
 		... on Commit {
 			author {email}
@@ -226,6 +222,7 @@ const getForks = ({login, after, first = 100}) => gql({
 			nodes {
 				id
 				name
+				nameWithOwner
 				parent {nameWithOwner}
 				refs(refPrefix: "refs/heads/", first: 50) {
 					${refsFragment}
