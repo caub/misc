@@ -1,0 +1,43 @@
+<style>
+body{
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  color: rgba(20,20,20,.9);
+}
+@keyframes loader {
+	0% { content: "" }
+	25% {	content: "." }
+	50% {	content: ".." }
+	75% {	content: "..." }
+	100% { content: "..." }
+}
+
+.loader::after {
+	content: "";
+	animation: loader 2s linear infinite;
+	display: inline-block;
+}
+em {
+  margin-right: 1rem;
+}
+</style>
+
+<span id="loader" class="loader"></span>
+
+<script>
+const url = new URL(location.href);
+if (!url.searchParams.get('q')) {
+  loader.classList.remove('loader');
+  loader.innerHTML = `<em>URL format:</em><code>?q=npm-package-name</code>`;
+  throw 'missing q param';
+}
+fetch('https://api.npms.io/v2/package/'+url.searchParams.get('q'))
+  .then(r => r.json())
+  .then(d => {
+    location.href = d.collected.metadata.links.repository;
+  })
+</script>
