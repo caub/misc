@@ -40,7 +40,7 @@ span[data-t] {
 - [DOM tagged template](https://github.com/caub/dom-tagged-template)
 - [Todo list](https://github.com/caub/todo-list) <span data-t="react"></span> <span data-s="service-" data-t="worker"></span>
 - [Color wheel](https://github.com/caub/color-wheel) <span data-t="react"></span>
-- [Color util](https://github.com/caub/colorutil) <span data-t="color-model"></span>
+- [Color transform](https://github.com/caub/color-tf) <span data-t="color-model"></span>
 - [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
 
 ### Some other miscellaneous scripts:

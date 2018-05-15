@@ -16,7 +16,7 @@ body{
 	100% { content: "..." }
 }
 
-.loader::after {
+#loader:empty::after {
 	content: "";
 	animation: loader 2s linear infinite;
 	display: inline-block;
@@ -24,20 +24,41 @@ body{
 em {
   margin-right: 1rem;
 }
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+nav a {
+  margin: 0 8px;
+  font-size: .8em;
+}
+nav:empty::after {
+  content: "No results";
+}
 </style>
 
-<span id="loader" class="loader"></span>
+<div id="loader"></div>
 
 <script>
 const url = new URL(location.href);
-if (!url.searchParams.get('q')) {
-  loader.classList.remove('loader');
+const q = url.searchParams.get('q');
+if (!q) {
   loader.innerHTML = `<em>URL format:</em><code>?q=npm-package-name</code>`;
   throw 'missing q param';
 }
-fetch('https://api.npms.io/v2/package/'+url.searchParams.get('q'))
-  .then(r => r.json())
-  .then(d => {
+fetch('https://api.npms.io/v2/package/' + q)
+  .then(async r => {
+    if (!r.ok) {
+      const d = await fetch('https://api.npms.io/v2/search?q=' + q).then(r => r.json());
+      loader.innerHTML = `<nav>${d.results.map(({package: p}) => `<a href="${p.links.repository}">${p.name}</a>`).join('')}</nav>`;
+      return;
+    }
+    const d = await r.json();
+    if (!d.collected.metadata.links.repository) {
+      loader.innerHTML = `No GH found <a href="${d.collected.metadata.links.npm}">${d.collected.metadata.name}</a>`;
+      return;
+    }
     location.href = d.collected.metadata.links.repository;
   })
 </script>
