@@ -38,16 +38,16 @@ console.log(qsR([1, 2, 5, 4, -1, -2, 3]))
 
 
 // benching
-const data = Array.from({length: 1e4}, () => 
-  Array.from({length: 35 * Math.random()}, () => 256*Math.random())
+const data = Array.from({ length: 1e4 }, () =>
+  Array.from({ length: 35 * Math.random() }, () => 256 * Math.random())
 );
 
-const right =  () => {
+const right = () => {
   data.forEach(a => {
     const sortd = qsR(a);
   })
 };
-const left =  () => {
+const left = () => {
   data.forEach(a => {
     const sortd = qsL(a);
   })
@@ -64,8 +64,27 @@ bench(right)
 bench(right)
 
 
-function bench(fn, name=fn.name) {
+function bench(fn, name = fn.name) {
   console.time(name);
   fn();
   console.timeEnd(name);
 }
+
+
+var quicksort = (arr, fn = (a, b) => a - b, l = 0, r = arr.length - 1) => {
+  if (l >= r) return arr;
+  let i = l;
+  let k = r; // pivot index
+  for (; i < k;) {
+    if (fn(arr[i], arr[k]) > 0) { // if bigger than pivot, move to right of the k
+      [arr[i], arr[k - 1], arr[k]] = [arr[k - 1], arr[k], arr[i]];
+      k--;
+    } else {
+      i++;
+    }
+  }
+  quicksort(arr, fn, l, k - 1);
+  quicksort(arr, fn, k + 1, r);
+  return arr;
+}
+console.log(quicksort([1, 2, 5, 4, -1, -2, 3]))
