@@ -60,4 +60,6 @@ const tags = [...new Set(Array.from(document.querySelectorAll('span[data-t]'), e
 customStyle.textContent += tags.map(tag => `span[data-t="${tag}"] {
 	background-color: hsla(${hue(tag)},100%,45%,.85);
 }`).join('\n');
+
+document.querySelector('h1 > a').href = '//github.com/caub/misc';
 </script>
