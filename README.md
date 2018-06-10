@@ -15,7 +15,35 @@ span[data-t] {
 	color: white;
 	font-weight: 600;
 }
+
+span[data-stars] {
+	padding: 6px;
+	font-size: 80%;
+}
+span[data-stars]::after {
+	content: attr(data-stars) "★";
+}
 </style>
+
+
+### Some projects:
+- [As-buffer - convert anything to a nodejs buffer](https://github.com/caub/as-buffer) <span data-t="node"></span>
+- [Base-conversion](https://github.com/caub/base-conv)
+- [Color wheel](https://github.com/caub/color-wheel) <span data-t="react"></span> <span data-t="canvas"></span>
+- [Color transform](https://github.com/caub/color-tf) <span data-t="color-model"></span>
+- [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
+- [DOM tagged template](https://github.com/caub/dom-tagged-template)
+- [Emoji-time](https://github.com/caub/emoji-time)
+- [Fetcho - a simple fetch wrapper, to avoid axios](https://github.com/caub/fetcho)
+- [Github clean useless forks](//caub.github.io/github-clean-forks) <span data-t="GH"></span> <span data-t="graphql"></span>
+- [Ktree - tree search](https://github.com/caub/ktree)
+- [Material-ui-multi-select - a Gitlab-issues-filter-like component](https://github.com/caub/mui-multi-select) <span data-t="react"></span>
+- [Mongo-lazy-connect - simplify mongo connection](https://github.com/caub/mongo-lazy-connect) <span data-t="node"></span>
+- [Pg-tsquery - useful text-search parser](https://github.com/caub/pg-tsquery)
+- [Roman-number](https://github.com/caub/roman-number)
+- [Svgz - ongoing effort to enhance svgo](https://github.com/caub/svgz) <span data-t="svg"></span>
+- [Todo list](https://github.com/caub/todo-list) <span data-t="react"></span> <span data-s="service-" data-t="worker"></span>
+
 
 ### Some scripts:
 
@@ -25,7 +53,6 @@ span[data-t] {
 - [Calculator](//caub.github.io/misc/calculator) <span data-t="parser"></span>
 - [Chrome vs Firefox versions](//caub.github.io/misc/chrome-firefox-versions) <span data-t="c3js"></span> <span data-t="chartjs"></span>
 - [Connect-four](//caub.github.io/misc/connect-four) <span data-t="AI"></span>
-- [Github clean useless forks](//caub.github.io/github-clean-forks) <span data-t="GH"></span> <span data-t="graphql"></span>
 - [Github self starring ratio](//caub.github.io/misc/gh-self-star) <span data-t="GH"></span> <span data-t="graphql"></span>
 - [Infinite clock](//caub.github.io/misc/infinite-clock)
 - [Minimax](//caub.github.io/misc/minimax) <span data-t="AI"></span>
@@ -35,13 +62,6 @@ span[data-t] {
 - [Spreadsheet](//caub.github.io/misc/sheet) <span data-t="css-grid"></span>
 - [Streams with fetch](//caub.github.io/misc/stream)
 - [SVG custom logo](//caub.github.io/misc/logo) <span data-t="svg"></span>
-
-### Some projects:
-- [DOM tagged template](https://github.com/caub/dom-tagged-template)
-- [Todo list](https://github.com/caub/todo-list) <span data-t="react"></span> <span data-s="service-" data-t="worker"></span>
-- [Color wheel](https://github.com/caub/color-wheel) <span data-t="react"></span>
-- [Color transform](https://github.com/caub/color-tf) <span data-t="color-model"></span>
-- [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
 
 ### Some other miscellaneous scripts:
 - [Gists](https://gist.github.com/caub/public?direction=desc&sort=updated)
@@ -62,4 +82,14 @@ customStyle.textContent += tags.map(tag => `span[data-t="${tag}"] {
 }`).join('\n');
 
 document.querySelector('h1 > a').href = '//github.com/caub/misc';
+
+document.querySelectorAll('#some-projects + ul li').forEach(async li => {
+	const a = li.querySelector('a');
+	const r = await fetch('https://api.github.com/repos' + new URL(a.href).pathname).then(r => r.json());
+	if (r.stargazers_count) {
+		const span = document.createElement('span');
+		span.dataset.stars = r.stargazers_count;
+		li.append(span);
+	}
+});
 </script>
