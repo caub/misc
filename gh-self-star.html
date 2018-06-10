@@ -21,6 +21,9 @@ input[type=submit] {
 	font-feature-settings: 'liga' 1;
 	padding: 5px 10px;
 }
+input[type=submit]:disabled {
+	border: 1px solid lightgray;
+}
 form {
 	position: relative;
 	display: flex;
@@ -52,10 +55,13 @@ if (localStorage.ghToken) {
 	form.token.value = localStorage.ghToken;
 }
 
-form.onsubmit = async e => {
-	e.preventDefault();
+form.onsubmit = submit;
+
+async function submit(e) {
+	if (e) e.preventDefault();
 	const login = form.login.value;
 	localStorage.ghToken = form.token.value;
+	form.elements[2].disabled = true;
 	try {
 		const user = await getUser({login});
 		const totalStars = user.starredRepositories.totalCount;
@@ -79,6 +85,7 @@ form.onsubmit = async e => {
 	} catch(err) {
 		output.innerHTML = `<a href="https://developer.github.com/v4/guides/forming-calls/#authenticating-with-graphql">${err && err.message || 'Create a GH token!'}</a>`
 	}
+	form.elements[2].disabled = false;
 };
 const getUser = ({login}) => gql({
 	query: `query user($login: String!) { 
@@ -137,4 +144,9 @@ const gql = ({query, variables}) => fetch('https://api.github.com/graphql', {
 		}
 		return r.json().then(d => d.data);
 	});
+
+if (location.hash.length > 1) {
+	form.login.value = location.hash.slice(1);
+	submit();
+}
 </script>
