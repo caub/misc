@@ -84,8 +84,9 @@ customStyle.textContent += tags.map(tag => `span[data-t="${tag}"] {
 document.querySelector('h1 > a').href = '//github.com/caub/misc';
 
 document.querySelectorAll('#some-projects + ul li').forEach(async li => {
-	const a = li.querySelector('a');
-	const r = await fetch('https://api.github.com/repos' + new URL(a.href).pathname).then(r => r.json());
+	const a = li.querySelector('a'), url = new URL(a.href);
+	const p = url.pathname.slice(1).split('/');
+	const r = await fetch(`https://api.github.com/repos/${p[p.length-2]||url.hostname.split('.',1)[0]}/${p[p.length-1]}`).then(r => r.json());
 	if (r.stargazers_count) {
 		const span = document.createElement('span');
 		span.dataset.stars = r.stargazers_count;
