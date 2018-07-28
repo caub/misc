@@ -65,7 +65,7 @@ span[data-stars]::after {
 
 ### Some other miscellaneous scripts:
 - [Gists](https://gist.github.com/caub/public?direction=desc&sort=updated)
-- [Leetcode](https://discuss.leetcode.com/user/caub) ([median-of-sorted-arrays](https://leetcode.com/problems/median-of-two-sorted-arrays/discuss/2504/Median-of-2-sorted-arrays-in-JS))
+- [Leetcode](https://leetcode.com/caub/) ([median-of-sorted-arrays](https://leetcode.com/problems/median-of-two-sorted-arrays/discuss/2504/Median-of-2-sorted-arrays-in-JS), [super-pow](https://leetcode.com/problems/super-pow/discuss/154516/JS-solution-(without-and-with-BigInt)))
 - [Repl.it](https://repl.it/@caub)
 - [Runkit](https://runkit.com/caub)
 - [Blog](http://cauburtin.blogspot.fr)

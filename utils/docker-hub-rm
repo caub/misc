@@ -1,16 +1,19 @@
 #!/bin/bash
 
 # args:
-# - USER (docker-hub username)
+# - ORG (docker-hub username)
 # - PW (docker-hub password)
 # - IMG (image to delete)
 
-ORG='caub'
-IMG='node'
+ORG='...'
+PW='.......'
+IMG='node-app'
 
 # get token
 echo 'Retrieving token ...'
-TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${USER}'", "password": "'${PW}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${ORG}'", "password": "'${PW}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
-curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${USER}/${IMG}
+echo "token: $TOKEN for ${ORG}"
+
+curl -X DELETE -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/${ORG}/${IMG}
 echo 'DELETED'
