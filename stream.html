@@ -48,9 +48,6 @@
 		margin: 0 1em;
 		display: inline-block;
 	}
-	fieldset > div {
-		display: flex;
-	}
 
 </style>
 </head>
@@ -61,13 +58,10 @@
 	<input type="text" id="substring" pattern="[0-9\.]+" placeholder="3.14159" autocomplete="off" title="Enter only digits" required>
 	<!-- <output id="bytes" for="substring"> </output> -->
 
-	<input type="submit" value="Search, with the Power of Streams!">
+	<input type="submit" name="sbm" value="Search, with the Power of Streams!">
 
 	<fieldset id="output" hidden="true">
-		<div>
-			<progress id="progress"></progress>
-			<button type="button" id="cancelBtn">❌</button>
-		</div>
+		<progress id="progress"></progress>
 		<output id="progressText"></output>
 	</fieldset>
 </form>
@@ -92,18 +86,13 @@ if (location.hash) {
 }
 
 
-async function consume(reader, contentLength) {
+async function consume(reader, contentLength, cancel) {
 	let total = 0;
 	progress.max = contentLength;
 	const substringRe = new RegExp(substring.value.replace('.','\\.'));
-	function cancel(e){
-		if (e) {e.preventDefault(); output.hidden=true; }
-		reader.cancel();
-		form.onsubmit = submit;
-		if (e && e.type=='submit') submit();
-	}
 	form.onsubmit = cancel;
-	cancelBtn.onclick = cancel;
+	// not necessary to call reader.cancel(); on cancel, it's handled by AbortController
+	form.sbm.value = 'Stop streaming';
 	let done, value;
 	do {
 		({done, value} = await reader.read());
@@ -149,11 +138,20 @@ form.onsubmit = submit;
 
 function submit(e) {
 	if (e) e.preventDefault();
+	const controller = new AbortController();
 	output.hidden=false;
 	progressText.textContent = 'Performing fetch...';
+	form.sbm.value = 'Stop';
+	const cancel = e => {
+		e.preventDefault(); output.hidden=true;
+		controller.abort();
+		form.onsubmit = submit;
+		form.sbm.value = 'Search, with the Power of Streams!';
+	};
+	form.onsubmit = cancel;
 
-	fetch(`https://cors-anywhere.herokuapp.com/${PI_URL}`)
-	.then(res => consume(res.body.getReader(), res.headers.get('Content-Length')) )
+	fetch(`https://cors-anywhere.herokuapp.com/${PI_URL}`, {signal: controller.signal})
+	.then(res => consume(res.body.getReader(), res.headers.get('Content-Length'), cancel) )
 	.then(console.log)
 	.catch(e => progressText.textContent = e);
 }
