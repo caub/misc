@@ -34,7 +34,7 @@ span[data-stars]::after {
 - [CSS minifiers benchmark](https://caub.github.io/css-min-bench)
 - [DOM tagged template](https://github.com/caub/dom-tagged-template)
 - [Emoji-time](https://github.com/caub/emoji-time)
-- [Fetcho - a simple fetch wrapper, to avoid axios](https://github.com/caub/fetcho)
+- [Fetchu - a simple http(s).request/fetch wrapper](https://github.com/caub/fetchu)
 - [Github clean useless forks](//caub.github.io/github-clean-forks) <span data-t="GH"></span> <span data-t="graphql"></span>
 - [Ktree - tree search](https://github.com/caub/ktree)
 - [Material-ui-multi-select - a Gitlab-issues-filter-like component](https://github.com/caub/mui-multi-select) <span data-t="react"></span>
