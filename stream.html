@@ -85,8 +85,25 @@ if (location.hash) {
 	submit();
 }
 
+form.onsubmit = submit;
 
-async function consume(reader, contentLength, cancel) {
+async function submit(e) {
+	if (e) e.preventDefault();
+	const controller = new AbortController();
+	output.hidden=false;
+	progressText.textContent = 'Performing fetch...';
+	form.sbm.value = 'Stop';
+	const cancel = e => {
+		if (e) { e.preventDefault(); output.hidden=true; }
+		controller.abort();
+		form.onsubmit = submit;
+		form.sbm.value = 'Search, with the Power of Streams!';
+	};
+	form.onsubmit = cancel;
+
+	const res = await fetch(`https://cors-anywhere.herokuapp.com/${PI_URL}`, {signal: controller.signal});
+	const contentLength = +res.headers.get('Content-Length');
+	const reader = res.body.getReader();
 	let total = 0;
 	progress.max = contentLength;
 	const substringRe = new RegExp(substring.value.replace('.','\\.'));
@@ -104,56 +121,12 @@ async function consume(reader, contentLength, cancel) {
 		const m = decoder.decode(value).match(substringRe);
 		if (m) {
 			progressText.textContent = `Found it! At position ${total - value.byteLength + m.index}.`;
-			return cancel();
+			cancel();
 		}
 
 	} while (!done);
 
 	progressText.textContent = `All done! (${total} bytes total)`;
-
-	/** // without async:
-	return pump();
-	function pump() {
-		return reader.read().then(({done, value}) => {
-			
-
-			total += value.byteLength;
-			progressText.textContent = `${total}${contentLength?'/'+contentLength:''} bytes received`;
-			progress.value = contentLength ? total : null;
-
-			let m = decoder.decode(value).match(substringRe);
-
-			if (m) {
-				progressText.textContent = `Found it! At position ${total - value.byteLength + m.index}.`;
-				return cancel();
-			} else {
-				return pump();
-			}
-		})
-	}
-	*/
-}
-
-form.onsubmit = submit;
-
-function submit(e) {
-	if (e) e.preventDefault();
-	const controller = new AbortController();
-	output.hidden=false;
-	progressText.textContent = 'Performing fetch...';
-	form.sbm.value = 'Stop';
-	const cancel = e => {
-		e.preventDefault(); output.hidden=true;
-		controller.abort();
-		form.onsubmit = submit;
-		form.sbm.value = 'Search, with the Power of Streams!';
-	};
-	form.onsubmit = cancel;
-
-	fetch(`https://cors-anywhere.herokuapp.com/${PI_URL}`, {signal: controller.signal})
-	.then(res => consume(res.body.getReader(), res.headers.get('Content-Length'), cancel) )
-	.then(console.log)
-	.catch(e => progressText.textContent = e);
 }
 
 </script>
