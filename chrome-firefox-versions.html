@@ -108,24 +108,23 @@ function load() {
 		fetch('https://cors-anywhere.herokuapp.com/https://en.wikipedia.org/wiki/Google_Chrome_release_history').then(r => r.text()),
 		fetch('https://cors-anywhere.herokuapp.com/https://en.wikipedia.org/wiki/Firefox_release_history').then(r => r.text())
 	])
-	.then(r=>{
-		var doc=(new DOMParser).parseFromString(r[0], "text/html");
-		var chromeT = doc.querySelectorAll('table.wikitable')[1];
-		var chromeM = Array.from(chromeT.rows).slice(1, -1).map(tr => [tr.cells[0].textContent, tr.cells[1].textContent]);
-		var chromeD = transpose(chromeM);
-		var chromeData = chromeD[1].map((d,i) => ({
+	.then(r => {
+		const [chromeDoc, ffDoc] = r.map(x => new DOMParser().parseFromString(x, "text/html"));
+		const chromeT = chromeDoc.querySelectorAll('table.wikitable')[1];
+		const chromeM = Array.from(chromeT.rows).slice(1, -1).map(tr => [tr.cells[0].textContent, tr.cells[1].textContent]);
+		const chromeD = transpose(chromeM);
+		const chromeData = chromeD[1].map((d,i) => ({
 			x: (d.match(/\d{4}-\d{2}-\d{2}/)||[])[0],
 			y: +chromeD[0][i].match(/\d+\.\d+/)
 		}));
-		
-		doc=(new DOMParser).parseFromString(r[1], "text/html");
-		var ffTs = Array.from(doc.querySelectorAll('table.wikitable')).filter(t => t.rows.length>10);
-		var ffM = [].concat(...ffTs.map(t => Array.from(t.rows).slice(1)
-			.filter(tr => Number.isInteger(+tr.cells[tr.cells.length-4].textContent))
+
+		const ffTs = Array.from(ffDoc.querySelectorAll('table.wikitable')).filter(t => t.rows.length>10);
+		const ffM = [].concat(...ffTs.map(t => Array.from(t.rows).slice(1)
+			.filter(tr => tr.cells[tr.cells.length-4] && Number.isInteger(+tr.cells[tr.cells.length-4].textContent))
 			.map(tr => [tr.cells[tr.cells.length-4].textContent, tr.cells[tr.cells.length-2].textContent])
 		));
-		var ffD=transpose(ffM)
-		var ffData = ffD[1].map((d, i) => ({
+		const ffD=transpose(ffM)
+		const ffData = ffD[1].map((d, i) => ({
 			x: new Date(d.split('(')[0]).toJSON().slice(0, 10),
 			y: +ffD[0][i].match(/\d+\.\d+/)
 		}));
