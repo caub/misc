@@ -84,7 +84,7 @@ function processFiles(files) {
 		const res = await optimize(new Uint8Array(buf), file.type);
 		const blob = new Blob([res.data], {type: file.type});
 		//console.log(file, blob);
-		xx.innerHTML = `<a href="${URL.createObjectURL(blob)}" download="${file.name}">optimized on browser</a>: ${Math.round(blob.size/1000)}KB`;
+		xx.innerHTML = `<a href="${URL.createObjectURL(blob)}" download="${file.name}">optimized in browser</a>: ${Math.round(blob.size/1000)}KB`;
 	});
 }
 
