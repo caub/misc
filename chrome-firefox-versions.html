@@ -13,10 +13,10 @@
 <h3>c3js</h3>
 <div id="chart"></div>
 
-<script src="https://unpkg.com/moment@2.22.2/min/moment.min.js"></script>
-<script src="https://unpkg.com/chart.js@2.7.2/dist/Chart.min.js"></script>
-<script src="https://unpkg.com/d3@5.7.0/dist/d3.min.js"></script>
-<script src="https://unpkg.com/c3@0.6.7/c3.min.js"></script>
+<script src="https://unpkg.com/moment/min/moment.min.js"></script>
+<script src="https://unpkg.com/chart.js/dist/Chart.min.js"></script>
+<script src="https://unpkg.com/d3/dist/d3.min.js"></script>
+<script src="https://unpkg.com/c3/c3.min.js"></script>
 <script>
 	
 load()
@@ -25,19 +25,19 @@ load()
 	var myChart = new Chart(ctx, {
 		type: 'line',
 		data: {
-				datasets: [{
-						label: 'Chrome versions',
-						borderColor: '#00f',
-						data: chromeData,
-						borderWidth: 1,
-						fill: false,
-				}, {
-						label: 'Firefox versions',
-						borderColor: '#f00',
-						data: ffData,
-						borderWidth: 1,
-						fill: false,
-				}]
+			datasets: [{
+				label: 'Chrome versions',
+				borderColor: '#00f',
+				data: chromeData,
+				borderWidth: 1,
+				fill: false,
+			}, {
+				label: 'Firefox versions',
+				borderColor: '#f00',
+				data: ffData,
+				borderWidth: 1,
+				fill: false,
+			}]
 		},
 		options: {
 			responsive: true,
@@ -118,11 +118,9 @@ function load() {
 			y: +chromeD[0][i].match(/\d+\.\d+/)
 		}));
 
-		const ffTs = Array.from(ffDoc.querySelectorAll('table.wikitable')).filter(t => t.rows.length>10);
-		const ffM = [].concat(...ffTs.map(t => Array.from(t.rows).slice(1)
-			.filter(tr => tr.cells[tr.cells.length-4] && Number.isInteger(+tr.cells[tr.cells.length-4].textContent))
-			.map(tr => [tr.cells[tr.cells.length-4].textContent, tr.cells[tr.cells.length-2].textContent])
-		));
+		const ffTs = Array.from(ffDoc.querySelectorAll('table.wikitable.mw-collapsible'));
+		const ffM =ffTs.flatMap(t => Array.from(t.rows).slice(1).filter(tr=>tr.cells.length>=2 && tr.cells[0].nodeName==='TD').map(tr => [tr.cells[0].textContent.trim(), tr.cells[1].textContent.trim()]).filter(([v]) => /^\d+\.\d+/));
+
 		const ffD=transpose(ffM)
 		const ffData = ffD[1].map((d, i) => ({
 			x: new Date(d.split('(')[0]).toJSON().slice(0, 10),
