@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Men vs Women athletic performances</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+</head>
+<body>
+
+<canvas id="myChart" width="400" height="200"></canvas>
+
+<script src="https://unpkg.com/chart.js/dist/Chart.min.js"></script>
+<script>
+	
+load()
+.then((data) => {
+	var ctx = document.getElementById("myChart").getContext('2d');
+	var myChart = new Chart(ctx, {
+        type: 'line',
+		data: {
+            xLabels: data.map(o => o.x),
+            datasets: [{
+                label: 'Men-Women perfs',
+                borderColor: '#00f',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: false,
+                data: data.map(o => o.y),
+            }]
+		},
+		options: {
+			responsive: true,
+			title:{
+				display: true,
+				text:'Men Vs Women perfs'
+            },
+            tooltips: {
+				mode: 'x',
+                intersect: false,
+                callbacks: {
+                    label(tooltipItem) { 
+                        return [
+                            `ratio: ${Math.round(tooltipItem.yLabel*1000)/1000}`,
+                            `men record: ${data[tooltipItem.index].mRaw}`,
+                            `women record: ${data[tooltipItem.index].wRaw}`
+                        ];
+                    }
+                }
+			},
+            scales: {
+                xAxes: [{
+                    type: 'category',
+                    display: true,
+                }],
+                yAxes: [{
+                    display: true,
+                    type: 'linear'
+                }]
+            }
+		}
+	});
+});
+
+
+function load() {
+	if (localStorage.menWomenAthleticsRatio) {
+        const cache = JSON.parse(localStorage.menWomenAthleticsRatio);
+		if (Date.now() < cache.expire) {
+			return Promise.resolve(cache.data);
+		}
+	}
+	return fetch('https://cors-anywhere.herokuapp.com/https://en.wikipedia.org/wiki/List_of_world_records_in_athletics').then(r => r.text())
+	.then(r => {
+        const doc = new DOMParser().parseFromString(r, "text/html");
+        
+        const mt = doc.getElementById('Men').closest('h3').nextElementSibling;
+        const wt = doc.getElementById('Women').closest('h3').nextElementSibling;
+
+        const getTableData = t => Array.from(t.rows).filter(tr => tr.cells[0].nodeName==='TD')
+            .flatMap((tr,i,a)=>tr.cells.length===a[0].cells.length?[[tr.cells[0].textContent.replace(/\((track|road)\)/, '').replace('[b]', '').trim(), tr.cells[1].textContent.trim()]]:tr.cells.length===1?[[tr.cells[0].textContent.replace(/\((track|road)\)/, '').replace('[b]', '').trim(), a[i+1].cells[0].textContent.trim()]]:[]);
+
+        const md = new Map(getTableData(mt));
+        const wd = new Map(getTableData(wt));
+
+        const commonKeys = [...md.keys()].filter(key => wd.has(key));
+
+        const parseTimeToCs = str => {
+            const {h,m,s,c} = str.match(/(?:(?:(?<h>\d+):)?(?:(?<m>\d+):))?(?<s>\d+)(?:\.(?<c>\d+))?/).groups;
+            return (h ? h*360000 : 0) + (m ? m*6000 : 0) + s*100  + (+(c||0));
+        };
+
+        const parseV = str => {
+            const [v, unit] = str.split(' ');
+            return unit ? {value: +v.replace(/[ ,]/g,''), unit} : {value: parseTimeToCs(v), unit: 'cs'};
+        }
+
+        const data = commonKeys.flatMap(k => {
+            const m = parseV(md.get(k));
+            const w = parseV(wd.get(k));
+            if (/ put| throw/.test(k)) return []; // ignore those, men/women use different weights
+            return [{x: k, y: m.unit === 'cs' ? m.value/w.value : w.value/m.value, mRaw: md.get(k), wRaw: wd.get(k)}];
+        }).sort((a,b) => b.y-a.y);
+
+		localStorage.menWomenAthleticsRatio = JSON.stringify({expire: Date.now()+7*86_400_000, data});
+
+		return data;
+	});
+}
+
+
+
+</script>
+</body>
+</html>
+
+
+

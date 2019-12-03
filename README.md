@@ -52,6 +52,7 @@ span[data-stars]::after {
 - [2048 solver](//caub.github.io/misc/2048) <span data-t="AI"></span>
 - [Calculator](//caub.github.io/misc/calculator) <span data-t="parser"></span>
 - [Chrome vs Firefox versions](//caub.github.io/misc/chrome-firefox-versions) <span data-t="c3js"></span> <span data-t="chartjs"></span>
+- [Men vs Women athletic performances](//caub.github.io/misc/men-women-athletics-ratio) <span data-t="chartjs"></span>
 - [Connect-four](//caub.github.io/misc/connect-four) <span data-t="AI"></span>
 - [Github self starring ratio](//caub.github.io/misc/gh-self-star) <span data-t="GH"></span> <span data-t="graphql"></span>
 - [Infinite clock](//caub.github.io/misc/infinite-clock)
