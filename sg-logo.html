@@ -1,0 +1,51 @@
+<html>
+<head>
+<style>
+svg {
+  /* outline: 1px auto #1111; */
+  width: 100px;
+  color: #0098ce;
+  border: 2px solid #eee;
+}
+</style>
+</head>
+<body>
+<script>
+const R = 80; // logo radius
+const r = 12; // points radius
+const x1 = Math.sin(Math.PI/3)*R;
+const y1 = Math.cos(Math.PI/3)*R;
+
+const points = [
+  [x1, -y1, -5*Math.PI/6],
+  [0, -R, 5*Math.PI/6],
+  [-x1, -y1, Math.PI/6],
+  [0, 0, Math.PI/6],
+  [x1, y1, 5*Math.PI/6],
+  [0, R, 7*Math.PI/6],
+  [-x1, y1],
+];
+
+function _round(num, decimals = 2) {
+  if (Math.abs(num) < 1e-6) return 0;
+  return Number(Math.round(num + 'e' + decimals) + 'e-' + decimals);
+}
+
+function round(xs, ...os) {
+  return os.reduce((s, o, i) => `${s}${typeof o==='number'?_round(o):o}${xs[i+1]}`, xs[0]);
+}
+
+
+// M-13,7.5 L0,15 L13,7.5 L0,0 L-13,-7.5 L0,-15 L13,-7.5
+
+document.body.innerHTML = `<svg viewBox="-100 -100 200 200">
+  <defs>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="currentColor"/>
+    </filter>
+  </defs>
+  <path d="${points.map(([x,y, angle]) => round`M${x-r},${y} a${r},${r},0,0,0,${2*r},0 a${r},${r},0,0,0,${-2*r},0 ${angle?round`M${x+r*Math.cos(angle)},${y+r*Math.sin(angle)} l${(R-2*r)*Math.cos(angle)},${(R-2*r)*Math.sin(angle)}`:''}`).join(' ')}" style="stroke:currentColor; stroke-width:6; fill:transparent; filter:url(#shadow);" />
+</svg>`;
+</script>
+</body>
+</html>

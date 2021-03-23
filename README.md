@@ -62,7 +62,8 @@ span[data-stars]::after {
 - [Shape-outside](//caub.github.io/misc/shape-outside) <span data-t="css"></span>
 - [Spreadsheet](//caub.github.io/misc/sheet) <span data-t="css-grid"></span>
 - [Streams with fetch](//caub.github.io/misc/stream)
-- [SVG custom logo](//caub.github.io/misc/logo) <span data-t="svg"></span>
+- [Storeganise logo](//caub.github.io/misc/sg-logo) <span data-t="svg"></span>
+- [Some logo](//caub.github.io/misc/logo) <span data-t="svg"></span>
 
 ### Some other miscellaneous scripts:
 - [Gists](https://gist.github.com/caub/public?direction=desc&sort=updated)
