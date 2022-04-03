@@ -80,22 +80,11 @@ function processFiles(files) {
 		ori.textContent = `${file.name}: ${Math.round(file.size/1000)}KB`;
 		const xx = row.insertCell(); // processed by server
 		xx.innerHTML = `<span class="loader"></span>`;
-		var buf = await readAsArrayBuffer(file);
-		const res = await optimize(new Uint8Array(buf), file.type);
-		const blob = new Blob([res.data], {type: file.type});
+		const newFile = await optimize(file);
 		//console.log(file, blob);
-		xx.innerHTML = `<a href="${URL.createObjectURL(blob)}" download="${file.name}">optimized in browser</a>: ${Math.round(blob.size/1000)}KB`;
+		xx.innerHTML = `<a href="${URL.createObjectURL(newFile)}" download="${newFile.name}">optimized in browser</a>: ${Math.round(newFile.size/1000)}KB`;
 	});
 }
-
-const readAsArrayBuffer = file =>
-	new Promise(resolve => {
-		var reader = new FileReader();
-		reader.readAsArrayBuffer(file)
-		reader.onload = e => {
-			resolve(e.target.result)
-		}
-	});
 
 const workerCode = `importScripts('https://unpkg.com/mozjpeg-js', 'https://cdn.rawgit.com/psych0der/pngquantjs/master/demo/js/pngquant.min.js');
 onmessage = function(event) {
@@ -109,14 +98,14 @@ onmessage = function(event) {
 
 const workerUrl = URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'}));
 
-function optimize(data, type) {
+function optimize(file) {
 	const worker = new Worker(workerUrl);
 	return new Promise(resolve => {
 		worker.onmessage = event => {
-			resolve(event.data);
+			resolve(new File([event.data.data], file.name, {type: file.type}));
 			worker.terminate();
 		};
-		worker.postMessage({data, type});
+		file.arrayBuffer().then(buf => worker.postMessage({data: new Uint8Array(buf), type: file.type}));
 	})
 }
 
