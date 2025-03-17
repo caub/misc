@@ -54,7 +54,7 @@ document.body.innerHTML = `<svg viewBox="-100 -100 200 200">
   <path d="${points.map(([x,y, angle]) => round`M${x-r},${y} a${r},${r},0,0,0,${2*r},0 a${r},${r},0,0,0,${-2*r},0 ${angle?round`M${x+r*Math.cos(angle)},${y+r*Math.sin(angle)} l${(R-2*r)*Math.cos(angle)},${(R-2*r)*Math.sin(angle)}`:''}`).join(' ')}" style="stroke:currentColor; stroke-width:6; fill:transparent; filter:url(#shadow);" />
 </svg>
 
-<svg viewBox="-80 -50 160 180" style="border:1px solid red">
+<svg viewBox="-80 -50 160 180">
   <defs>
     <filter id="shadow">
       <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="currentColor"/>
