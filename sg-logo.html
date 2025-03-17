@@ -26,6 +26,13 @@ const points = [
   [-x1, y1],
 ];
 
+const points2 = [
+  [Math.cos(Math.PI/6)*R/2, Math.sin(Math.PI/6)*R*3/2, 5*Math.PI/6],
+  [-Math.cos(Math.PI/6)*R/2, Math.sin(Math.PI/6)*R/2, Math.PI/6],
+  [Math.cos(Math.PI/6)*R/2, -Math.sin(Math.PI/6)*R/2, 5*Math.PI/6],
+  [-Math.cos(Math.PI/6)*R/2, Math.sin(Math.PI/6)*R*5/2],
+];
+
 function _round(num, decimals = 2) {
   if (Math.abs(num) < 1e-6) return 0;
   return Number(Math.round(num + 'e' + decimals) + 'e-' + decimals);
@@ -45,6 +52,15 @@ document.body.innerHTML = `<svg viewBox="-100 -100 200 200">
     </filter>
   </defs>
   <path d="${points.map(([x,y, angle]) => round`M${x-r},${y} a${r},${r},0,0,0,${2*r},0 a${r},${r},0,0,0,${-2*r},0 ${angle?round`M${x+r*Math.cos(angle)},${y+r*Math.sin(angle)} l${(R-2*r)*Math.cos(angle)},${(R-2*r)*Math.sin(angle)}`:''}`).join(' ')}" style="stroke:currentColor; stroke-width:6; fill:transparent; filter:url(#shadow);" />
+</svg>
+
+<svg viewBox="-80 -50 160 180" style="border:1px solid red">
+  <defs>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="currentColor"/>
+    </filter>
+  </defs>
+  <path d="${points2.map(([x,y, angle]) => round`M${x-r},${y} a${r},${r},0,0,0,${2*r},0 a${r},${r},0,0,0,${-2*r},0 ${angle?round`M${x+r*Math.cos(angle)},${y+r*Math.sin(angle)} l${(R-2*r)*Math.cos(angle)},${(R-2*r)*Math.sin(angle)}`:''}`).join(' ')}" style="stroke:currentColor; stroke-width:6; fill:transparent; filter:url(#shadow);" />
 </svg>`;
 </script>
 </body>
