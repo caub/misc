@@ -384,20 +384,7 @@ var svg = ù('<svg>', 'body').css({
 	width:(100+m*30)+'px', height:(150+n*30)+'px'
 })
 
-var gradRed = svg.def('<linearGradient>').attr({
-	x1:0, y1:0, x2:1, y2:1
-}).stops(
-	{offset:'0%', stopColor:'Tomato', stopOpacity:0.4},
-	{offset:'80%', stopColor:'Coral', stopOpacity:0.8}
-);
-var gradBlue = svg.def('<linearGradient>').attr({
-	x1:0, y1:0, x2:1, y2:1
-}).stops(
-	{offset:'0%', stopColor:'CornflowerBlue', stopOpacity:0.4},
-	{offset:'80%', stopColor:'CadetBlue', stopOpacity:0.8}
-);
-
-var turnIndicator=ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r:14, cx:20, cy:100+n*30-15})
+var turnIndicator=ù('<circle>', svg).attr({fill:root.isBlue?'blue':'red', r:14, cx:20, cy:100+n*30-15})
 .on('click', function(){
 	var i=predict(+depthInput.value)
 	console.log('pred',i, root.children.map(function(c){return c.score}))
@@ -421,7 +408,7 @@ for (var i=0;i<m;i++){// drop in zones
 			var j=update(root, i);
 
 			console.log('stats', root.stats.blue.c, root.stats.red.c)
-			ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r:14, cx:65+i*30, cy:100+15, class: 'disc'})
+			ù('<circle>', svg).attr({fill:root.isBlue?'blue':'red', r:14, cx:65+i*30, cy:100+15, class: 'disc'})
 			.animate({strokeOpacity:0, cy:100+j*30+15}, 180);
 
 			if (root.stats[root.isBlue?'blue':'red'].c[4]>0){
@@ -430,7 +417,7 @@ for (var i=0;i<m;i++){// drop in zones
 			}
 
 			root.isBlue = !root.isBlue;
-			turnIndicator.attr('fill', root.isBlue?gradBlue:gradRed);
+			turnIndicator.attr('fill', root.isBlue?'blue':'red');
 
 			setTimeout(function(){
 				var i=predict(+depthInput.value);
@@ -439,13 +426,13 @@ for (var i=0;i<m;i++){// drop in zones
 				}
 				var j=update(root, i)
 				console.log('stats op', root.stats.blue.c, root.stats.red.c, root.children.map(function(c){return c.score}))
-				ù('<circle>', svg).attr({fill:root.isBlue?gradBlue:gradRed, r:14, cx:65+i*30, cy:100+15, class: 'disc'})
+				ù('<circle>', svg).attr({fill:root.isBlue?'blue':'red', r:14, cx:65+i*30, cy:100+15, class: 'disc'})
 				.animate({strokeOpacity:0, cy:100+j*30+15}, 180);
 				if (root.stats[root.isBlue?'blue':'red'].c[4]>0)
 					show('You lost :(')
 
 					root.isBlue = !root.isBlue;
-				turnIndicator.attr('fill', root.isBlue?gradBlue:gradRed);
+				turnIndicator.attr('fill', root.isBlue?'blue':'red');
 			},200)
 
 		}
