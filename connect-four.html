@@ -400,8 +400,8 @@ var turnIndicator=ù('<circle>', svg).attr({fill:root.isBlue?'blue':'red', r:14,
 for (var i=0;i<m;i++){// drop in zones
 	ù('<line>', svg).attr({
 		x1:65+i*30, y1:50, x2:65+i*30, y2:85,
-		stroke:'lightgray', strokeOpacity:0, i: i, 
-		strokeWidth:28, strokeLinecap:'round'
+		stroke:'lightgray', 'stroke-opacity':0.25, i: i, 
+		'stroke-width':28, 'stroke-line-cap':'round'
 	}).on('click', function(){
 		var el = ù(this), i = +el.attr('i');
 		if(root.isBlue && root.colsLevels[i]>=0) {
